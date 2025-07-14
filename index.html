@@ -170,13 +170,13 @@
       fetchImageList().then(imgs=>{if(!imgs.length)return;preload(imgs).then(()=>{
         const patterns={left:['up','left','down','right'],right:['right','down','left','up']};
         const floatMap={left:'float-left',right:'float-right',up:'float-up',down:'float-down'};
-        const floatDist=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--float-distance'));
         const state={
           left:{idx:0,step:0,cur:null,el:document.getElementById('split-left')},
           right:{idx:1,step:0,cur:null,el:document.getElementById('split-right')}
         };
         function create(src){const d=document.createElement('div');d.className='slide';d.style.backgroundImage=`url(/static/header_img/${src})`;return d;}
-        function offs(dir){return{left:[-floatDist,0],right:[floatDist,0],up:[0,-floatDist],down:[0,floatDist]}[dir];}
+        // offset helpers for pan transitions (full-screen)
+        function offs(dir){return{left:[-100,0],right:[100,0],up:[0,-100],down:[0,100]}[dir];}
         function adv(side){const s=state[side],pat=patterns[side];const dir=pat[(++s.step-1)%pat.length];s.idx=(s.idx+1)%imgs.length;
           const old=s.cur;old.classList.remove(...Object.values(floatMap));const next=create(imgs[s.idx]);const[ox,oy]=offs(dir);
           next.style.transform=`translate(calc(-50% + ${ox}% ),calc(-50% + ${oy}% ))`;s.el.append(next);
