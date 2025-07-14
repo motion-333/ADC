@@ -14,18 +14,20 @@
       --border-color: #b20000;
       --text-color: #f1ede2;
       --slide-scale: 110%;
-      --float-distance: 100%;
+      --float-distance: 3%;
+      --padding1: 1rem;
+      --spacing1: 1.5rem;
+      --spacing2: 2rem;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Futura', sans-serif; }
 
     /* Topbar */
     .topbar {
-      position: fixed; top: 0; left: 0;
+      position: fixed; top: calc(env(safe-area-inset-top) + 10px); left: 0;
       width: 100vw; height: var(--header-height);
       display: flex; align-items: center;
       justify-content: space-between;
-      padding-top: env(safe-area-inset-top);
       z-index: 1000;
     }
     .topbar::before {
@@ -39,20 +41,24 @@
     }
     .topbar > * { position: relative; z-index: 1; }
     .left-group, .right-group {
-      flex: 1;
       display: flex;
       align-items: center;
-      gap: 2rem;
     }
-    .left-group { padding-left: 1rem; }
-    .right-group { padding-right: 1rem; }
-    .left-group a:first-child { margin-right: auto; }
-    .right-group a:last-child { margin-left: auto; }
+    .left-group {
+      gap: var(--spacing1);
+      padding-left: var(--padding1);
+    }
+    .right-group {
+      gap: var(--spacing2);
+      padding-right: var(--padding1);
+    }
     .logo-container {
       flex: 0 0 auto;
       display: flex;
       justify-content: center;
       align-items: center;
+      margin-left: var(--spacing1);
+      margin-right: var(--spacing2);
     }
     .topbar a {
       color: var(--text-color);
