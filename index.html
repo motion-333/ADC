@@ -18,17 +18,22 @@
       --padding1: 1rem;
       --spacing1: 1.5rem;
       --spacing2: 2rem;
+      --zig-size: 20px;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Futura', sans-serif; }
 
     /* Topbar */
     .topbar {
-      position: fixed; top: calc(env(safe-area-inset-top) + 20px); left: 0;
-      width: 100vw; height: var(--header-height);
+      position: fixed;
+      top: calc(env(safe-area-inset-top) + 20px);
+      left: 0;
+      width: 100vw;
+      height: var(--header-height);
       display: grid;
       grid-template-columns: 1fr auto 1fr;
       align-items: center;
+      padding: 0 var(--padding1);
       z-index: 1000;
     }
     .topbar::before {
@@ -41,27 +46,22 @@
       z-index: 0;
     }
     .topbar > * { position: relative; z-index: 1; }
-    .left-group, .right-group {
+    .left-group,
+    .right-group {
       display: flex;
       align-items: center;
+      justify-content: space-between;
     }
     .left-group {
-      gap: var(--spacing1);
-      padding-left: var(--padding1);
-      justify-content: flex-end;
+      padding-right: var(--spacing1);
     }
     .right-group {
-      gap: var(--spacing2);
-      padding-right: var(--padding1);
-      justify-content: flex-start;
+      padding-left: var(--spacing1);
     }
     .logo-container {
-      flex: 0 0 auto;
       display: flex;
       justify-content: center;
       align-items: center;
-      margin-left: var(--spacing1);
-      margin-right: var(--spacing2);
       justify-self: center;
     }
     .topbar a {
@@ -93,8 +93,24 @@
     }
 
     /* Blocks */
-    .green-rect { background: green; width: 100vw; height: 200px; }
-    .main-yellow { background: yellow; width: 100vw; height: 100vh; }
+    .red-rect {
+      background: var(--border-color);
+      color: var(--text-color);
+      width: 100vw;
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 0 1rem;
+      clip-path: polygon(0 0,100% 0,100% calc(100% - var(--zig-size)),95% 100%,90% calc(100% - var(--zig-size)),85% 100%,80% calc(100% - var(--zig-size)),75% 100%,70% calc(100% - var(--zig-size)),65% 100%,60% calc(100% - var(--zig-size)),55% 100%,50% calc(100% - var(--zig-size)),45% 100%,40% calc(100% - var(--zig-size)),35% 100%,30% calc(100% - var(--zig-size)),25% 100%,20% calc(100% - var(--zig-size)),15% 100%,10% calc(100% - var(--zig-size)),5% 100%,0 calc(100% - var(--zig-size)));
+    }
+    .main-yellow {
+      background: var(--text-color);
+      width: 100vw;
+      height: 100vh;
+      clip-path: polygon(0 var(--zig-size),5% 0,10% var(--zig-size),15% 0,20% var(--zig-size),25% 0,30% var(--zig-size),35% 0,40% var(--zig-size),45% 0,50% var(--zig-size),55% 0,60% var(--zig-size),65% 0,70% var(--zig-size),75% 0,80% var(--zig-size),85% 0,90% var(--zig-size),95% 0,100% var(--zig-size),100% 100%,0 100%);
+    }
     .main-purple { background: purple; width: 100vw; height: 100vh; }
     .pink-block { background: pink; width: 100vw; height: 33vh; }
     .footer { background: var(--border-color); width: 100vw; height: var(--header-height); }
@@ -132,9 +148,11 @@
     <div class="split" id="split-right"></div>
   </div>
 
-  <div class="green-rect"></div>
+  <div class="red-rect">
+    Il faudra remplir ici avec un texte qui décrit l'unité des trois restaurants à la fois au niveau de sa carte mais aussi de son ambiance.
+  </div>
   <div class="main-yellow" id="yellow"></div>
-  <div class="green-rect"></div>
+  <div class="red-rect"></div>
   <div class="main-purple" id="purple"></div>
   <div class="pink-block" id="pink"></div>
   <div class="footer"></div>
@@ -177,11 +195,25 @@
         function create(src){const d=document.createElement('div');d.className='slide';d.style.backgroundImage=`url(/static/header_img/${src})`;return d;}
         // offset helpers for pan transitions (full-screen)
         function offs(dir){return{left:[-100,0],right:[100,0],up:[0,-100],down:[0,100]}[dir];}
-        function adv(side){const s=state[side],pat=patterns[side];const dir=pat[(++s.step-1)%pat.length];s.idx=(s.idx+1)%imgs.length;
-          const old=s.cur;old.classList.remove(...Object.values(floatMap));const next=create(imgs[s.idx]);const[ox,oy]=offs(dir);
-          next.style.transform=`translate(calc(-50% + ${ox}% ),calc(-50% + ${oy}% ))`;s.el.append(next);
-          requestAnimationFrame(()=>{old.style.transform=`translate(calc(-50% - ${ox}% ),calc(-50% - ${oy}% ))`;next.style.transform='translate(-50%,-50%)';});
-          old.addEventListener('transitionend',()=>{s.el.removeChild(old);next.classList.add(floatMap[dir]);},{once:true});s.cur=next;
+        function adv(side){
+          const s=state[side], pat=patterns[side];
+          const dir=pat[(++s.step-1)%pat.length];
+          s.idx=(s.idx+1)%imgs.length;
+          const old=s.cur;
+          const next=create(imgs[s.idx]);
+          const [ox,oy]=offs(dir);
+          next.style.transform=`translate(calc(-50% + ${ox}% ),calc(-50% + ${oy}% ))`;
+          s.el.append(next);
+          requestAnimationFrame(()=>{
+            const start=getComputedStyle(old).transform;
+            old.classList.remove(...Object.values(floatMap));
+            old.style.transform=start;
+            void old.offsetWidth;
+            old.style.transform=`translate(calc(-50% - ${ox}% ),calc(-50% - ${oy}% ))`;
+            next.style.transform='translate(-50%,-50%)';
+          });
+          old.addEventListener('transitionend',()=>{s.el.removeChild(old);next.classList.add(floatMap[dir]);},{once:true});
+          s.cur=next;
         }
         ['left','right'].forEach(side=>{const s=state[side];s.cur=create(imgs[s.idx]);s.el.append(s.cur);s.cur.classList.add(floatMap[patterns[side][0]]);
           setInterval(()=>adv(side),parseInt(getComputedStyle(document.documentElement).getPropertyValue('--slide-interval')));
