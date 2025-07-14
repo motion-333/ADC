@@ -14,7 +14,7 @@
       --border-color: #b20000;
       --text-color: #f1ede2;
       --slide-scale: 110%;
-      --float-distance: 5%;
+      --float-distance: 100%;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Futura', sans-serif; }
@@ -25,25 +25,29 @@
       width: 100vw; height: var(--header-height);
       display: flex; align-items: center;
       justify-content: space-between;
+      padding-top: env(safe-area-inset-top);
       z-index: 1000;
     }
     .topbar::before {
       content: '';
-      position: absolute; top: 0; left: 0;
-      width: 100%; height: 100%;
+      position: absolute; top: -10px; left: 0;
+      width: 100%; height: calc(100% + 20px);
       background: rgba(255,255,255,0.15);
       backdrop-filter: blur(10px);
-      mask-image: linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,0));
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%);
       z-index: 0;
     }
     .topbar > * { position: relative; z-index: 1; }
     .left-group, .right-group {
       flex: 1;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding: 0 1rem;
+      gap: 2rem;
     }
+    .left-group { padding-left: 1rem; }
+    .right-group { padding-right: 1rem; }
+    .left-group a:first-child { margin-right: auto; }
+    .right-group a:last-child { margin-left: auto; }
     .logo-container {
       flex: 0 0 auto;
       display: flex;
@@ -90,10 +94,10 @@
     @keyframes float-right{ from{transform:translate(-50%,-50%);} to{transform:translate(calc(-50% - var(--float-distance)),-50%);} }
     @keyframes float-up   { from{transform:translate(-50%,-50%);} to{transform:translate(-50%,calc(-50% + var(--float-distance)));} }
     @keyframes float-down { from{transform:translate(-50%,-50%);} to{transform:translate(-50%,calc(-50% - var(--float-distance)));} }
-    .float-left { animation: float-left 6s ease-in-out infinite alternate both; }
-    .float-right{ animation: float-right 6s ease-in-out infinite alternate both; }
-    .float-up   { animation: float-up 6s ease-in-out infinite alternate both; }
-    .float-down { animation: float-down 6s ease-in-out infinite alternate both; }
+    .float-left { animation: float-left var(--slide-interval) linear forwards; }
+    .float-right{ animation: float-right var(--slide-interval) linear forwards; }
+    .float-up   { animation: float-up var(--slide-interval) linear forwards; }
+    .float-down { animation: float-down var(--slide-interval) linear forwards; }
   </style>
 </head>
 <body>
