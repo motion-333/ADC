@@ -30,7 +30,7 @@
       --spacing1: 1.5rem;
       --spacing2: 2rem;
       --zig-size: 20px;
-      --zig-step: 4%;
+      --zig-step: 2%;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Futura', sans-serif; }
@@ -115,13 +115,22 @@
       justify-content: center;
       text-align: center;
       padding: 0 1rem;
-      clip-path: polygon(0 0,100% 0,100% calc(100% - var(--zig-size)),100% 100%,96% calc(100% - var(--zig-size)),92% 100%,88% calc(100% - var(--zig-size)),84% 100%,80% calc(100% - var(--zig-size)),76% 100%,72% calc(100% - var(--zig-size)),68% 100%,64% calc(100% - var(--zig-size)),60% 100%,56% calc(100% - var(--zig-size)),52% 100%,48% calc(100% - var(--zig-size)),44% 100%,40% calc(100% - var(--zig-size)),36% 100%,32% calc(100% - var(--zig-size)),28% 100%,24% calc(100% - var(--zig-size)),20% 100%,16% calc(100% - var(--zig-size)),12% 100%,8% calc(100% - var(--zig-size)),4% 100%,0 calc(100% - var(--zig-size)));
+      clip-path: polygon(0 0,100% 0,100% calc(100% - var(--zig-size)),98% 100%,96% calc(100% - var(--zig-size)),94% 100%,92% calc(100% - var(--zig-size)),90% 100%,88% calc(100% - var(--zig-size)),86% 100%,84% calc(100% - var(--zig-size)),82% 100%,80% calc(100% - var(--zig-size)),78% 100%,76% calc(100% - var(--zig-size)),74% 100%,72% calc(100% - var(--zig-size)),70% 100%,68% calc(100% - var(--zig-size)),66% 100%,64% calc(100% - var(--zig-size)),62% 100%,60% calc(100% - var(--zig-size)),58% 100%,56% calc(100% - var(--zig-size)),54% 100%,52% calc(100% - var(--zig-size)),50% 100%,48% calc(100% - var(--zig-size)),46% 100%,44% calc(100% - var(--zig-size)),42% 100%,40% calc(100% - var(--zig-size)),38% 100%,36% calc(100% - var(--zig-size)),34% 100%,32% calc(100% - var(--zig-size)),30% 100%,28% calc(100% - var(--zig-size)),26% 100%,24% calc(100% - var(--zig-size)),22% 100%,20% calc(100% - var(--zig-size)),18% 100%,16% calc(100% - var(--zig-size)),14% 100%,12% calc(100% - var(--zig-size)),10% 100%,8% calc(100% - var(--zig-size)),6% 100%,4% calc(100% - var(--zig-size)),2% 100%,0% calc(100% - var(--zig-size)),0 0);
+    }
+    .red-box {
+      background: var(--border-color);
+      width: 100vw;
+      height: 200px;
     }
     .main-yellow {
       background: var(--text-color);
       width: 100vw;
       height: 100vh;
       clip-path: polygon(0 var(--zig-size),2% 0,4% var(--zig-size),6% 0,8% var(--zig-size),10% 0,12% var(--zig-size),14% 0,16% var(--zig-size),18% 0,20% var(--zig-size),22% 0,24% var(--zig-size),26% 0,28% var(--zig-size),30% 0,32% var(--zig-size),34% 0,36% var(--zig-size),38% 0,40% var(--zig-size),42% 0,44% var(--zig-size),46% 0,48% var(--zig-size),50% 0,52% var(--zig-size),54% 0,56% var(--zig-size),58% 0,60% var(--zig-size),62% 0,64% var(--zig-size),66% 0,68% var(--zig-size),70% 0,72% var(--zig-size),74% 0,76% var(--zig-size),78% 0,80% var(--zig-size),82% 0,84% var(--zig-size),86% 0,88% var(--zig-size),90% 0,92% var(--zig-size),94% 0,96% var(--zig-size),98% 0,100% var(--zig-size),100% 100%,0 100%);
+    
+      margin-top: calc(-1 * var(--zig-size));
+      position: relative;
+      left: var(--zig-step);
     }
     .main-purple { background: purple; width: 100vw; height: 100vh; }
     .pink-block { background: pink; width: 100vw; height: 33vh; }
@@ -164,7 +173,7 @@
     Il faudra remplir ici avec un texte qui décrit l'unité des trois restaurants à la fois au niveau de sa carte mais aussi de son ambiance.
   </div>
   <div class="main-yellow" id="yellow"></div>
-  <div class="red-rect"></div>
+  <div class="red-box"></div>
   <div class="main-purple" id="purple"></div>
   <div class="pink-block" id="pink"></div>
   <div class="footer"></div>
