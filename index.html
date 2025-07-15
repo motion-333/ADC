@@ -41,7 +41,7 @@
     /* Topbar */
     .topbar {
       position: fixed;
-      top: calc(env(safe-area-inset-top) + 30px);
+      top: calc(env(safe-area-inset-top) + 40px);
       left: 0;
       width: 100vw;
       height: var(--header-height);
@@ -53,11 +53,11 @@
     }
     .topbar::before {
       content: '';
-      position: absolute; top: -30px; left: 0;
-      width: 100%; height: calc(100% + 60px);
+      position: absolute; top: -40px; left: 0;
+      width: 100%; height: calc(100% + 80px);
       background: rgba(255,255,255,0.15);
       backdrop-filter: blur(10px);
-      mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%);
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 80%, rgba(0,0,0,0) 100%);
       z-index: 0;
     }
     .topbar > * { position: relative; z-index: 1; }
@@ -65,13 +65,16 @@
     .right-group {
       display: flex;
       align-items: center;
-      justify-content: space-between;
     }
     .left-group {
       padding-right: var(--spacing1);
+      gap: var(--spacing1);
+      justify-content: flex-start;
     }
     .right-group {
-      padding-left: var(--spacing1);
+      padding-left: var(--spacing2);
+      gap: var(--spacing2);
+      justify-content: flex-end;
     }
     .logo-container {
       display: flex;
@@ -237,12 +240,40 @@
         // offset helpers for pan transitions (full-screen)
         function offs(dir){return{left:[-100,0],right:[100,0],up:[0,-100],down:[0,100]}[dir];}
         const brightState={left:bright[state.left.idx],right:bright[state.right.idx]};
+        const topbar=document.querySelector('.topbar');
+        function getColorBrightness(col){
+          const m=col.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+          return m? (parseInt(m[1])+parseInt(m[2])+parseInt(m[3]))/3/255 : 1;
+        }
+        function elementBrightness(el){
+          let e=el;
+          while(e&&e!==document&&getComputedStyle(e).backgroundColor==='rgba(0, 0, 0, 0)'){
+            e=e.parentElement;
+          }
+          if(!e) return 1;
+          return getColorBrightness(getComputedStyle(e).backgroundColor);
+        }
+        function brightnessUnderTopbar(){
+          const y=topbar.getBoundingClientRect().bottom+1;
+          const x=window.innerWidth/2;
+          let el=document.elementFromPoint(x,y);
+          if(!el) return 1;
+          const split=el.closest('.split');
+          if(split) return brightState[split.id==='split-left'?'left':'right'];
+          return elementBrightness(el);
+        }
         function updateTopbar(){
-          const color=(brightState.left>0.5||brightState.right>0.5)?'#163359':'#f1ede2';
-          document.documentElement.style.setProperty('--topbar-text',color);
-          document.querySelectorAll('.topbar a').forEach(a=>a.style.color=color);
+          const br=brightnessUnderTopbar();
+          const styles=getComputedStyle(document.documentElement);
+          const light=styles.getPropertyValue('--topbar-color-light');
+          const dark=styles.getPropertyValue('--topbar-color-dark');
+          const color=br>0.5?light:dark;
+          document.documentElement.style.setProperty('--topbar-text',color.trim());
+          document.querySelectorAll('.topbar a').forEach(a=>a.style.color=color.trim());
         }
         updateTopbar();
+        window.addEventListener('scroll',updateTopbar);
+        window.addEventListener('resize',updateTopbar);
         function adv(side){
           const s=state[side], pat=patterns[side];
           const dir=pat[(++s.step-1)%pat.length];
