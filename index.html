@@ -29,6 +29,9 @@
       --padding1: 1rem;
       --spacing1: 1.5rem;
       --spacing2: 2rem;
+      --topbar-color-light: #163359;
+      --topbar-color-dark: #f1ede2;
+      --topbar-text: var(--topbar-color-dark);
       --zig-size: 20px;
       --zig-step: 2%;
     }
@@ -77,7 +80,8 @@
       justify-self: center;
     }
     .topbar a {
-      color: var(--text-color);
+      color: var(--topbar-text);
+      transition: color 0.3s;
       text-transform: uppercase;
       font-weight: bold;
       font-size: 0.9rem;
@@ -124,7 +128,8 @@
     }
     .main-yellow {
       background: var(--text-color);
-      width: 100vw;
+      width: calc(100vw + var(--zig-step));
+      margin-left: calc(-1 * var(--zig-step));
       height: 100vh;
       clip-path: polygon(0 var(--zig-size),2% 0,4% var(--zig-size),6% 0,8% var(--zig-size),10% 0,12% var(--zig-size),14% 0,16% var(--zig-size),18% 0,20% var(--zig-size),22% 0,24% var(--zig-size),26% 0,28% var(--zig-size),30% 0,32% var(--zig-size),34% 0,36% var(--zig-size),38% 0,40% var(--zig-size),42% 0,44% var(--zig-size),46% 0,48% var(--zig-size),50% 0,52% var(--zig-size),54% 0,56% var(--zig-size),58% 0,60% var(--zig-size),62% 0,64% var(--zig-size),66% 0,68% var(--zig-size),70% 0,72% var(--zig-size),74% 0,76% var(--zig-size),78% 0,80% var(--zig-size),82% 0,84% var(--zig-size),86% 0,88% var(--zig-size),90% 0,92% var(--zig-size),94% 0,96% var(--zig-size),98% 0,100% var(--zig-size),100% 100%,0 100%);
     
@@ -205,8 +210,25 @@
           return Array.from(doc.querySelectorAll('a')).map(a=>a.getAttribute('href')).filter(h=>/\.(jpe?g|png)$/i.test(h));
         }catch{return[];}
       }
-      function preload(imgs){return Promise.all(imgs.map(s=>new Promise(r=>{const i=new Image();i.src=`/static/header_img/${s}`;i.onload=i.onerror=r;})));}
-      fetchImageList().then(imgs=>{if(!imgs.length)return;preload(imgs).then(()=>{
+      function avgBright(img){
+        const c=document.createElement('canvas');
+        c.width=c.height=1;
+        const x=c.getContext('2d');
+        x.drawImage(img,0,0,1,1);
+        const d=x.getImageData(0,0,1,1).data;
+        return (d[0]+d[1]+d[2])/3/255;
+      }
+      function preload(imgs){
+        return Promise.all(imgs.map(s=>new Promise(r=>{
+          const i=new Image();
+          i.src=`/static/header_img/${s}`;
+          i.onload=()=>r({src:s,bright:avgBright(i)});
+          i.onerror=()=>r({src:s,bright:0});
+        })));
+      }
+      fetchImageList().then(list=>{if(!list.length)return;preload(list).then(data=>{
+        const imgs=data.map(d=>d.src);
+        const bright=data.map(d=>d.bright);
         const patterns={left:['up','left','down','right'],right:['right','down','left','up']};
         const floatMap={left:'float-left',right:'float-right',up:'float-up',down:'float-down'};
         const floatDist=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--float-distance'));
@@ -218,10 +240,17 @@
         function create(src){const d=document.createElement('div');d.className='slide';d.style.backgroundImage=`url(/static/header_img/${src})`;return d;}
         // offset helpers for pan transitions (full-screen)
         function offs(dir){return{left:[-100,0],right:[100,0],up:[0,-100],down:[0,100]}[dir];}
+        const brightState={left:bright[state.left.idx],right:bright[state.right.idx]};
+        function updateTopbar(){
+          const avg=(brightState.left+brightState.right)/2;
+          document.documentElement.style.setProperty('--topbar-text',avg>0.5?'#163359':'#f1ede2');
+        }
+        updateTopbar();
         function adv(side){
           const s=state[side], pat=patterns[side];
           const dir=pat[(++s.step-1)%pat.length];
           s.idx=(s.idx+1)%imgs.length;
+          brightState[side]=bright[s.idx];
           const old=s.cur;
           const next=create(imgs[s.idx]);
           const [ox,oy]=offs(dir);
@@ -238,6 +267,7 @@
           });
           old.addEventListener('transitionend',()=>{s.el.removeChild(old);next.classList.add(floatMap[dir]);},{once:true});
           s.cur=next;
+          updateTopbar();
         }
         ['left','right'].forEach(side=>{const s=state[side];s.cur=create(imgs[s.idx]);s.el.append(s.cur);s.cur.classList.add(floatMap[patterns[side][0]]);
           setInterval(()=>adv(side),parseInt(getComputedStyle(document.documentElement).getPropertyValue('--slide-interval')));
