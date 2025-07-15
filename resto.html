@@ -195,21 +195,26 @@
       const countDt    = await getImageCount('/static/plats_dt/');
 
       // rotation toggles
-      const now = Date.now();
-      let evenState = Math.floor(now / 500) % 2;
-      let oddState  = Math.floor((now + 250) / 500) % 2;
+      let evenState = 0;
+      let oddState  = 0;
+      let labelState = 0;
       setInterval(() => {
         evenState ^= 1;
-        document.querySelectorAll('.even')
+        document.querySelectorAll('.square.even')
           .forEach(el => el.style.transform = `rotate(${evenState ? 15 : -15}deg)`);
       }, 500);
       setTimeout(() => {
         setInterval(() => {
           oddState ^= 1;
-          document.querySelectorAll('.odd')
+          document.querySelectorAll('.square.odd')
             .forEach(el => el.style.transform = `rotate(${oddState ? 15 : -15}deg)`);
         }, 500);
-      }, 250);
+      }, 500);
+      setInterval(() => {
+        labelState ^= 1;
+        document.querySelectorAll('.menu').forEach(el => el.style.transform = `rotate(${labelState ? 15 : -15}deg)`);
+        document.querySelectorAll('.reserver').forEach(el => el.style.transform = `rotate(${labelState ? -15 : 15}deg)`);
+      }, 500);
 
       // build each strip
       document.querySelectorAll('.line').forEach((line, idx) => {
@@ -229,7 +234,7 @@
 
             if (i === 4 || i === 8) {
               const lbl = document.createElement('span');
-              lbl.className = 'label ' + (isEven ? 'even' : 'odd');
+              lbl.className = 'label ' + (i === 4 ? 'menu' : 'reserver');
               lbl.textContent = (i === 4 ? 'MENU' : 'RÉSERVER');
               strip.appendChild(lbl);
             } else {
