@@ -149,6 +149,113 @@
     .float-right{ animation: float-right var(--slide-interval) linear forwards; }
     .float-up   { animation: float-up var(--slide-interval) linear forwards; }
     .float-down { animation: float-down var(--slide-interval) linear forwards; }
+
+    /* Reset & Font */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Futura', sans-serif;
+      background: #f1ede2;
+      color: #163359;
+      overflow: hidden;
+    }
+
+    /* Full screen container */
+    .container {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: stretch;
+      row-gap: 60px;
+    }
+
+    /* Wrapper for each line */
+    .line-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      height: 200px;
+    }
+
+    /* Sidebar with logo and info */
+    .sidebar {
+      flex: 0 0 155px;
+      height: 200px;
+      display: flex;
+      flex-direction: column;
+      align-items: start;
+    }
+    .rectangle {
+      margin-left: 5px;
+      width: 155px;
+      height: 124px;
+      flex-shrink: 0;
+      object-fit: cover;
+      object-position: center;
+    }
+    .info {
+      margin-top: 8px;
+      margin-left: 4px;
+      text-align: start;
+      font-size: 14px;
+      line-height: 1.2;
+      color: #163359;
+    }
+    .info a {
+      display: block;
+      margin-top: 4px;
+      color: #163359;
+      text-transform: uppercase;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    /* Ticker area */
+    .line {
+      left: 10px;
+      flex: 1;
+      height: 200px;
+      position: relative;
+      overflow: hidden;
+      --offset: 0ms;
+    }
+    .fade {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 155px;
+      height: 200px;
+      background: linear-gradient(to right, rgba(241,237,226,1), rgba(241,237,226,0));
+      pointer-events: none;
+      z-index: 10;
+    }
+    .scroll-wrapper {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+    .strip { display: flex; will-change: transform; }
+
+    /* image squares */
+    .square {
+      width: 100px;
+      height: 100px;
+      margin: 0 40px 0 0;
+      flex-shrink: 0;
+      transform-origin: center;
+      object-fit: cover;
+    }
+    .label {
+      margin: 0 40px 0 0;
+      font-size: 36px;
+      text-transform: uppercase;
+      color: #163359;
+      flex-shrink: 0;
+      transform-origin: center;
+    }
   </style>
 </head>
 <body>
@@ -176,7 +283,64 @@
   <div class="red-rect">
     Il faudra remplir ici avec un texte qui décrit l'unité des trois restaurants à la fois au niveau de sa carte mais aussi de son ambiance.
   </div>
-  <div class="main-yellow" id="yellow"></div>
+  <div class="main-yellow" id="yellow">
+    <div class="container">
+      <!-- Wrapper 1 -->
+      <div class="line-wrapper">
+        <div class="sidebar">
+          <img class="rectangle" src="/static/img/logo_17.png" alt="Logo 17">
+          <div class="info">
+            Aux Dés Calés 17<br>
+            181 Rue Legendre<br>
+            +33 1 47 70 01 09<br>
+            <a href="#">Réserver</a>
+          </div>
+        </div>
+        <div class="line" data-offset="0ms">
+          <div class="fade"></div>
+          <div class="scroll-wrapper">
+            <div class="strip"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Wrapper 2 -->
+      <div class="line-wrapper">
+        <div class="sidebar">
+          <img class="rectangle" src="/static/img/logo_18.png" alt="Logo 18">
+          <div class="info">
+            Aux Dés Cales 18<br>
+            11 rue Hégésippe Moreau<br>
+            +33 1 42 66 95 43<br>
+            <a href="#">Réserver</a>
+          </div>
+        </div>
+        <div class="line" data-offset="5000ms">
+          <div class="fade"></div>
+          <div class="scroll-wrapper">
+            <div class="strip"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Wrapper 3 -->
+      <div class="line-wrapper">
+        <div class="sidebar">
+          <img class="rectangle" src="/static/img/logo_dt.png" alt="Logo DT">
+          <div class="info">
+            Au Détour<br>
+            15 Rue Ganneron<br>
+            +33 01 71 27 50 91<br>
+            <a href="#">Réserver</a>
+          </div>
+        </div>
+        <div class="line" data-offset="10000ms">
+          <div class="fade"></div>
+          <div class="scroll-wrapper">
+            <div class="strip"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="red-box"></div>
   <div class="main-purple" id="purple"></div>
   <div class="pink-block" id="pink"></div>
@@ -301,6 +465,98 @@
           setInterval(()=>adv(side),parseInt(getComputedStyle(document.documentElement).getPropertyValue('--slide-interval')));
         });
       });});
+    });
+  </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const duration = 30000;
+
+      // HEAD-check sequentially numbered PNGs
+      async function getImageCount(folder) {
+        let count = 0;
+        while (true) {
+          const url = `${folder}${count+1}.png`;
+          try {
+            const res = await fetch(url, { method: 'HEAD' });
+            if (res.ok) count++;
+            else break;
+          } catch {
+            break;
+          }
+        }
+        return count;
+      }
+
+      // fetch counts
+      const count17_18 = await getImageCount('/static/plats_17_18/');
+      const countDt    = await getImageCount('/static/plats_dt/');
+
+      // rotation toggles
+      const now = Date.now();
+      let evenState = Math.floor(now / 500) % 2;
+      let oddState  = Math.floor((now + 250) / 500) % 2;
+      setInterval(() => {
+        evenState ^= 1;
+        document.querySelectorAll('.even')
+          .forEach(el => el.style.transform = `rotate(${evenState ? 15 : -15}deg)`);
+      }, 500);
+      setTimeout(() => {
+        setInterval(() => {
+          oddState ^= 1;
+          document.querySelectorAll('.odd')
+            .forEach(el => el.style.transform = `rotate(${oddState ? 15 : -15}deg)`);
+        }, 500);
+      }, 250);
+
+      // build each strip
+      document.querySelectorAll('.line').forEach((line, idx) => {
+        const offset = parseFloat(line.dataset.offset);
+        const strip  = line.querySelector('.strip');
+
+        const isDtLine = idx === 2;
+        const folder   = isDtLine ? '/static/plats_dt/' : '/static/plats_17_18/';
+        const count    = isDtLine ? countDt    : count17_18;
+
+        // sequential index counter
+        let imgIndex = 0;
+
+        for (let copy = 0; copy < 2; copy++) {
+          for (let i = 0; i < 12; i++) {
+            const isEven = !!(i % 2);
+
+            if (i === 4 || i === 8) {
+              const lbl = document.createElement('span');
+              lbl.className = 'label ' + (isEven ? 'even' : 'odd');
+              lbl.textContent = (i === 4 ? 'MENU' : 'RÉSERVER');
+              strip.appendChild(lbl);
+            } else {
+              const img = document.createElement('img');
+              img.className = 'square ' + (isEven ? 'even' : 'odd');
+
+              // cycle through 1…count
+              const n = (imgIndex % count) + 1;
+              img.src = `${folder}${n}.png`;
+              imgIndex++;
+
+              strip.appendChild(img);
+            }
+          }
+        }
+
+        // scrolling
+        const contentWidth = strip.offsetWidth / 2;
+        const speed        = contentWidth / duration;
+        let start = null;
+        function step(ts) {
+          if (!start) start = ts;
+          const elapsed = ts - start + offset;
+          const x = -((elapsed * speed) % contentWidth);
+          strip.style.transform = `translateX(${x}px)`;
+          requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      });
     });
   </script>
 </body>
