@@ -138,7 +138,30 @@
     }
     .main-purple { background: purple; width: 100vw; height: 100vh; }
     .pink-block { background: pink; width: 100vw; height: 33vh; }
-    .footer { background: var(--border-color); width: 100vw; height: var(--header-height); }
+    .footer {
+      background: var(--border-color);
+      width: 100vw;
+      height: var(--header-height);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--padding1);
+      color: var(--text-color);
+      font-size: 0.8rem;
+    }
+    .footer-right {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing1);
+    }
+    #back-top {
+      background: none;
+      border: none;
+      color: inherit;
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 0;
+    }
 
     /* Float animations */
     @keyframes float-left { from{transform:translate(-50%,-50%);} to{transform:translate(calc(-50% + var(--float-distance)),-50%);} }
@@ -184,14 +207,20 @@
   <div class="red-box"></div>
   <div class="main-purple" id="purple"></div>
   <div class="pink-block" id="pink"></div>
-  <div class="footer"></div>
+  <div class="footer">
+    <span>©2025 Aux Dés Calés</span>
+    <div class="footer-right">
+      <button id="back-top">Haut de page</button>
+      <span>Dev. by <a href="https://motion333.com" target="_blank">Motion</a></span>
+    </div>
+  </div>
 
   <script>
     // Smooth scroll
     document.addEventListener('DOMContentLoaded', () => {
-      const duration = 2000;
+      const defaultDuration = 2000;
       function ease(t) { return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2; }
-      function scrollToY(targetY) {
+      function scrollToY(targetY,duration=defaultDuration) {
         const startY=window.pageYOffset, diff=targetY-startY; let t0;
         function step(ts){ if(!t0)t0=ts; const t=Math.min((ts-t0)/duration,1);
           window.scrollTo(0,startY+diff*ease(t)); if(t<1)requestAnimationFrame(step);
@@ -204,6 +233,8 @@
         scrollToY(y);
       }));
       document.getElementById('logo-btn').addEventListener('click',e=>{e.preventDefault();scrollToY(0);});
+      const back=document.getElementById('back-top');
+      if(back){back.addEventListener('click',e=>{e.preventDefault();scrollToY(0,3000);});}
     });
 
     // Slideshow
