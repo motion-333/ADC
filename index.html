@@ -137,7 +137,11 @@
       margin-top: calc(-1 * var(--zig-size));
     }
     .main-purple { background: purple; width: 100vw; height: 100vh; }
-    .pink-block { background: pink; width: 100vw; height: 33vh; }
+    .pink-block {
+      background: pink;
+      width: 100vw;
+      height: 100vh;
+    }
     .footer {
       background: var(--border-color);
       width: 100vw;
@@ -319,15 +323,20 @@
           const [ox,oy]=offs(dir);
           const [fx,fy]=floatOff(dir);
           next.style.transform=`translate(calc(-50% + ${ox+fx}% ),calc(-50% + ${oy+fy}% ))`;
+          next.style.transition='none';
           s.el.append(next);
-          requestAnimationFrame(()=>{
-            const start=getComputedStyle(old).transform;
-            old.classList.remove(...Object.values(floatMap));
-            old.style.transform=start;
-            void old.offsetWidth;
-            old.style.transform=`translate(calc(-50% + ${fx-ox}% ),calc(-50% + ${fy-oy}% ))`;
-            next.style.transform='translate(-50%,-50%)';
-          });
+
+          old.classList.remove(...Object.values(floatMap));
+          old.style.transition='none';
+          old.style.transform=`translate(calc(-50% + ${fx}% ),calc(-50% + ${fy}% ))`;
+
+          void next.offsetWidth;
+
+          old.style.transition='transform var(--slide-duration) ease-in-out';
+          next.style.transition='transform var(--slide-duration) ease-in-out';
+          old.style.transform=`translate(calc(-50% + ${fx-ox}% ),calc(-50% + ${fy-oy}% ))`;
+          next.style.transform='translate(-50%,-50%)';
+
           old.addEventListener('transitionend',()=>{s.el.removeChild(old);next.classList.add(floatMap[dir]);},{once:true});
           s.cur=next;
           updateTopbar();
