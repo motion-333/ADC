@@ -240,6 +240,7 @@
         function updateTopbar(){
           const color=(brightState.left>0.5||brightState.right>0.5)?'#163359':'#f1ede2';
           document.documentElement.style.setProperty('--topbar-text',color);
+          document.querySelectorAll('.topbar a').forEach(a=>a.style.color=color);
         }
         updateTopbar();
         function adv(side){
