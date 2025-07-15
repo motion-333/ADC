@@ -86,6 +86,7 @@
       font-size: 0.9rem;
       text-decoration: none;
       white-space: nowrap;
+      transition: color 0.5s;
     }
     .logo {
       height: 60%;
@@ -127,11 +128,9 @@
     }
     .main-yellow {
       background: var(--text-color);
-      width: calc(100vw + var(--zig-step));
-      margin-left: calc(-1 * var(--zig-step));
+      width: 100vw;
       height: 100vh;
-      clip-path: polygon(-2% var(--zig-size),0 0,2% var(--zig-size),4% 0,6% var(--zig-size),8% 0,10% var(--zig-size),12% 0,14% var(--zig-size),16% 0,18% var(--zig-size),20% 0,22% var(--zig-size),24% 0,26% var(--zig-size),28% 0,30% var(--zig-size),32% 0,34% var(--zig-size),36% 0,38% var(--zig-size),40% 0,42% var(--zig-size),44% 0,46% var(--zig-size),48% 0,50% var(--zig-size),52% 0,54% var(--zig-size),56% 0,58% var(--zig-size),60% 0,62% var(--zig-size),64% 0,66% var(--zig-size),68% 0,70% var(--zig-size),72% 0,74% var(--zig-size),76% 0,78% var(--zig-size),80% 0,82% var(--zig-size),84% 0,86% var(--zig-size),88% 0,90% var(--zig-size),92% 0,94% var(--zig-size),96% 0,98% var(--zig-size),100% 0,100% 100%,-2% 100%);
-
+      clip-path: polygon(0% var(--zig-size),2% 0,4% var(--zig-size),6% 0,8% var(--zig-size),10% 0,12% var(--zig-size),14% 0,16% var(--zig-size),18% 0,20% var(--zig-size),22% 0,24% var(--zig-size),26% 0,28% var(--zig-size),30% 0,32% var(--zig-size),34% 0,36% var(--zig-size),38% 0,40% var(--zig-size),42% 0,44% var(--zig-size),46% 0,48% var(--zig-size),50% 0,52% var(--zig-size),54% 0,56% var(--zig-size),58% 0,60% var(--zig-size),62% 0,64% var(--zig-size),66% 0,68% var(--zig-size),70% 0,72% var(--zig-size),74% 0,76% var(--zig-size),78% 0,80% var(--zig-size),82% 0,84% var(--zig-size),86% 0,88% var(--zig-size),90% 0,92% var(--zig-size),94% 0,96% var(--zig-size),98% 0,100% var(--zig-size),100% 100%,0 100%);
       margin-top: calc(-1 * var(--zig-size));
     }
     .main-purple { background: purple; width: 100vw; height: 100vh; }
@@ -242,7 +241,6 @@
           const avg=(brightState.left+brightState.right)/2;
           const color=avg>0.5?'#163359':'#f1ede2';
           document.documentElement.style.setProperty('--topbar-text',color);
-          document.querySelectorAll('.topbar a').forEach(a=>a.style.color=color);
         }
         updateTopbar();
         function adv(side){
