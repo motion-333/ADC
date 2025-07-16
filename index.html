@@ -27,6 +27,7 @@
       --slide-scale: 100%;
       --float-distance: 3%;
       --top-offset: 2vh;
+      --top-padding: 3%;
       --padding1: 1rem;
       --spacing1: 1.5rem;
       --spacing2: 2rem;
@@ -48,7 +49,7 @@
       height: var(--header-height);
       display: flex;
       align-items: center;
-      padding: 0 var(--padding1);
+      padding: var(--top-padding) var(--padding1) 0;
       z-index: 1000;
     }
     .topbar::before {
@@ -176,10 +177,10 @@
     @keyframes float-right{ from{transform:translate(-50%,-50%);} to{transform:translate(calc(-50% + var(--float-distance)),-50%);} }
     @keyframes float-up   { from{transform:translate(-50%,-50%);} to{transform:translate(-50%,calc(-50% - var(--float-distance)));} }
     @keyframes float-down { from{transform:translate(-50%,-50%);} to{transform:translate(-50%,calc(-50% + var(--float-distance)));} }
-    .float-left { animation: float-left var(--slide-interval) linear forwards; }
-    .float-right{ animation: float-right var(--slide-interval) linear forwards; }
-    .float-up   { animation: float-up var(--slide-interval) linear forwards; }
-    .float-down { animation: float-down var(--slide-interval) linear forwards; }
+    .float-left { animation: float-left var(--slide-interval) ease-out forwards; }
+    .float-right{ animation: float-right var(--slide-interval) ease-out forwards; }
+    .float-up   { animation: float-up var(--slide-interval) ease-out forwards; }
+    .float-down { animation: float-down var(--slide-interval) ease-out forwards; }
 
     .resto-frame { width: 100%; height: 100%; border: none; }
   </style>
@@ -323,24 +324,26 @@
         setInterval(updateTopbar,100);
 
         function pan(side){
-          const s=state[side], pat=patterns[side];
-          const curDir=s.dir;
-          const nextDir=pat[(pat.indexOf(curDir)+1)%pat.length];
-          s.dir=nextDir;
-          s.idx=(s.idx+1)%imgs.length;
-          brightState[side]=bright[s.idx];
-          const old=s.cur;
-          const next=create(imgs[s.idx]);
-          const [ox,oy]=offs(curDir);
-          const [ofx,ofy]=floatOff(curDir);
-          const [nfx,nfy]=[0,0];
+          const s = state[side], pat = patterns[side];
+          const curDir = s.dir;
+          const nextDir = pat[(pat.indexOf(curDir)+1)%pat.length];
+          s.dir = nextDir;
+          s.idx = (s.idx + 1) % imgs.length;
+          brightState[side] = bright[s.idx];
+          const old = s.cur;
+          const next = s.next || create(imgs[s.idx]);
+          s.next = null;
+          const [ox,oy] = offs(curDir);
+          const [ofx,ofy] = floatOff(curDir);
+          const [nfx,nfy] = [0,0];
 
-          next.style.transform=`translate(calc(-50% + ${-ox + ofx}% ),calc(-50% + ${-oy + ofy}% ))`;
-          next.style.transition='none';
-          s.el.append(next);
+          next.style.transition = 'none';
+          next.style.transform = `translate(calc(-50% + ${-ox + ofx}% ),calc(-50% + ${-oy + ofy}% ))`;
+          if(!next.isConnected) s.el.append(next);
 
           // capture the current transform so the pan starts smoothly
           old.getAnimations().forEach(a=>a.finish());
+          next.getAnimations().forEach(a=>a.finish());
           const cur = getComputedStyle(old).transform;
           old.classList.remove(...Object.values(floatMap));
           old.style.transition='none';
@@ -357,9 +360,22 @@
         }
 
         function startFloat(side){
-          const s=state[side];
+          const s = state[side];
+          if(s.next){
+            s.el.removeChild(s.next);
+            s.next=null;
+          }
+          const nextIdx = (s.idx + 1) % imgs.length;
+          const pre = create(imgs[nextIdx]);
+          s.next = pre;
+          const [ox,oy] = offs(s.dir);
+          const [ofx,ofy] = floatOff(s.dir);
+          pre.style.transition = 'none';
+          pre.style.transform = `translate(calc(-50% + ${-ox + ofx}% ),calc(-50% + ${-oy + ofy}% ))`;
+          s.el.append(pre);
+
           s.cur.classList.add(floatMap[s.dir]);
-          s.cur.addEventListener('animationend',()=>pan(side),{once:true});
+          s.cur.addEventListener('animationend', () => pan(side), {once:true});
         }
 
         ['left','right'].forEach(side=>{
