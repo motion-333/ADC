@@ -26,7 +26,7 @@
       --text-color: #f1ede2;
       --slide-scale: 110%;
       --float-distance: 3%;
-      --top-offset: 60px;
+      --top-offset: 40px;
       --padding1: 1rem;
       --spacing1: 1.5rem;
       --spacing2: 2rem;
@@ -87,7 +87,7 @@
       color: var(--topbar-text);
       text-transform: uppercase;
       font-weight: bold;
-      font-size: 0.9rem;
+      font-size: 1.1rem;
       text-decoration: none;
       white-space: nowrap;
       transition: color 0.5s;
@@ -169,8 +169,8 @@
     }
 
     /* Float animations */
-    @keyframes float-left { from{transform:translate(-50%,-50%);} to{transform:translate(calc(-50% + var(--float-distance)),-50%);} }
-    @keyframes float-right{ from{transform:translate(-50%,-50%);} to{transform:translate(calc(-50% - var(--float-distance)),-50%);} }
+    @keyframes float-left { from{transform:translate(-50%,-50%);} to{transform:translate(calc(-50% - var(--float-distance)),-50%);} }
+    @keyframes float-right{ from{transform:translate(-50%,-50%);} to{transform:translate(calc(-50% + var(--float-distance)),-50%);} }
     @keyframes float-up   { from{transform:translate(-50%,-50%);} to{transform:translate(-50%,calc(-50% + var(--float-distance)));} }
     @keyframes float-down { from{transform:translate(-50%,-50%);} to{transform:translate(-50%,calc(-50% - var(--float-distance)));} }
     .float-left { animation: float-left var(--slide-interval) linear forwards; }
@@ -271,7 +271,7 @@
         const patterns={left:['up','left','down','right'],right:['right','down','left','up']};
         const floatMap={left:'float-left',right:'float-right',up:'float-up',down:'float-down'};
         const floatDist=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--float-distance'));
-        function floatOff(dir){return{left:[floatDist,0],right:[-floatDist,0],up:[0,floatDist],down:[0,-floatDist]}[dir];}
+        function floatOff(dir){return{left:[-floatDist,0],right:[floatDist,0],up:[0,-floatDist],down:[0,floatDist]}[dir];}
         const state={
           left:{idx:0,dir:patterns.left[0],cur:null,el:document.getElementById('split-left')},
           right:{idx:1,dir:patterns.right[0],cur:null,el:document.getElementById('split-right')}
@@ -325,7 +325,7 @@
           const next=create(imgs[s.idx]);
           const [ox,oy]=offs(curDir);
           const [ofx,ofy]=floatOff(curDir);
-          const [nfx,nfy]=floatOff(nextDir);
+          const [nfx,nfy]=[0,0];
 
           next.style.transform=`translate(calc(-50% + ${-ox}% ),calc(-50% + ${-oy}% ))`;
           next.style.transition='none';
@@ -344,7 +344,7 @@
           old.style.transform=`translate(calc(-50% + ${ofx+ox}% ),calc(-50% + ${ofy+oy}% ))`;
           next.style.transform=`translate(calc(-50% + ${nfx}% ),calc(-50% + ${nfy}% ))`;
 
-          old.addEventListener('transitionend',()=>{s.el.removeChild(old);next.classList.add(floatMap[nextDir]);},{once:true});
+          old.addEventListener('transitionend',()=>{s.el.removeChild(old);next.classList.add(floatMap[curDir]);},{once:true});
           s.cur=next;
           updateTopbar();
         }
