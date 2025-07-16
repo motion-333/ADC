@@ -26,7 +26,7 @@
       --text-color: #f1ede2;
       --slide-scale: 110%;
       --float-distance: 3%;
-      --top-offset: 40px;
+      --top-offset: 60px;
       --padding1: 1rem;
       --spacing1: 1.5rem;
       --spacing2: 2rem;
@@ -55,10 +55,10 @@
     .topbar::before {
       content: '';
       position: absolute; top: calc(-1 * var(--top-offset)); left: 0;
-      width: 100%; height: calc(100% + var(--top-offset) * 2);
+      width: 100%; height: calc(100% + var(--top-offset) * 3);
       background: rgba(255,255,255,0.15);
       backdrop-filter: blur(10px);
-      mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 80%, rgba(0,0,0,0) 100%);
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 90%, rgba(0,0,0,0) 100%);
       z-index: 0;
     }
     .topbar > * { position: relative; z-index: 1; }
@@ -314,7 +314,9 @@
         updateTopbar();
         window.addEventListener('scroll',updateTopbar);
         window.addEventListener('resize',updateTopbar);
-        function adv(side){
+        setInterval(updateTopbar,100);
+
+        function pan(side){
           const s=state[side], pat=patterns[side];
           const curDir=s.dir;
           const nextDir=pat[(pat.indexOf(curDir)+1)%pat.length];
@@ -344,16 +346,20 @@
           old.style.transform=`translate(calc(-50% + ${ofx+ox}% ),calc(-50% + ${ofy+oy}% ))`;
           next.style.transform=`translate(calc(-50% + ${nfx}% ),calc(-50% + ${nfy}% ))`;
 
-          old.addEventListener('transitionend',()=>{s.el.removeChild(old);next.classList.add(floatMap[curDir]);},{once:true});
-          s.cur=next;
-          updateTopbar();
+          old.addEventListener('transitionend',()=>{s.el.removeChild(old);s.cur=next;startFloat(side);updateTopbar();},{once:true});
         }
+
+        function startFloat(side){
+          const s=state[side];
+          s.cur.classList.add(floatMap[s.dir]);
+          s.cur.addEventListener('animationend',()=>pan(side),{once:true});
+        }
+
         ['left','right'].forEach(side=>{
           const s=state[side];
           s.cur=create(imgs[s.idx]);
           s.el.append(s.cur);
-          s.cur.classList.add(floatMap[s.dir]);
-          setInterval(()=>adv(side),parseInt(getComputedStyle(document.documentElement).getPropertyValue('--slide-interval')));
+          startFloat(side);
         });
       });});
     });
