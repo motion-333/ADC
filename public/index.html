@@ -49,7 +49,7 @@
     const SLIDE_DUR  = 1.0;
     const INTERVAL   = 3000;
     const DRIFT_DUR  = INTERVAL/1000 - SLIDE_DUR;
-    const FLOAT_DIST = 5;
+    const FLOAT_DIST = 3;
 
     const dirsLeft  = [{x:-1,y:0},{x:0,y:-1},{x:1,y:0},{x:0,y:1}];
     const dirsRight = [{x:1,y:0},{x:0,y:1},{x:-1,y:0},{x:0,y:-1}];
@@ -60,27 +60,29 @@
     const rightSlots = [document.getElementById('right-slot-0'), document.getElementById('right-slot-1')];
     let currL = 0, currR = 0;
 
-    // 1) fetch list and preload
-    fetch('/api/images')
-      .then(r => r.ok ? r.json() : Promise.reject(r.status))
-      .then(list => {
-        images = list;
-        if (images.length < 2) throw 'Need ≥2 images';
-
-        // preload all into browser cache
-        images.forEach(fn => {
+    // 1) discover sequential images and preload
+    (async function loadImages() {
+      for (let i = 1; ; i++) {
+        const file = `header${i}.jpg`;
+        const url = `/static/header_img/${file}`;
+        try {
+          const res = await fetch(url, { method: 'HEAD' });
+          if (!res.ok) break;
+          images.push(file);
           const img = new Image();
-          img.src = `/static/header_img/${fn}`;
-        });
+          img.src = url;
+        } catch {
+          break;
+        }
+      }
+      if (images.length < 2) throw 'Need \u22652 images';
 
-        // init slots
-        leftSlots[0].src  = `/static/header_img/${images[idxL]}`;
-        rightSlots[0].src = `/static/header_img/${images[idxR]}`;
+      // init slots
+      leftSlots[0].src  = `/static/header_img/${images[idxL]}`;
+      rightSlots[0].src = `/static/header_img/${images[idxR]}`;
 
-        // start loop
-        setTimeout(tick, INTERVAL);
-      })
-      .catch(err => console.error('Image list error:', err));
+      setTimeout(tick, INTERVAL);
+    })().catch(err => console.error('Image list error:', err));
 
     function tick() {
       const dirL = dirsLeft [ step % 4 ];
