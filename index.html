@@ -26,7 +26,7 @@
       --text-color: #f1ede2;
       --slide-scale: 105%;
       --float-distance: 3%;
-      --top-offset: 6vh;
+      --top-offset: 0;
       --top-padding: 3%;
       --padding1: 1rem;
       --spacing1: 1.5rem;
@@ -35,7 +35,7 @@
       --topbar-color-dark: #f1ede2;
       --topbar-text: var(--topbar-color-dark);
       --zig-size: 20px;
-      --blur-extra: 1.5rem;
+      --blur-extra: 3rem;
       --zig-step: 2%;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -62,7 +62,7 @@
       height: calc(100% + var(--blur-extra));
       background: rgba(255,255,255,0.25);
       backdrop-filter: blur(12px);
-      mask-image: linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,0) 80%);
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,0) 95%);
       z-index: 0;
     }
     .topbar > * { position: relative; z-index: 1; }
@@ -251,11 +251,7 @@
 
     // Slideshow
     document.addEventListener('DOMContentLoaded', () => {
-      async function fetchImageList(){
-        try{const res=await fetch('/static/header_img/');const html=await res.text();const doc=new DOMParser().parseFromString(html,'text/html');
-          return Array.from(doc.querySelectorAll('a')).map(a=>a.getAttribute('href')).filter(h=>/\.(jpe?g|png)$/i.test(h));
-        }catch{return[];}
-      }
+      const list = ['header1.jpg','header2.jpg','header3.jpg','header4.jpg','header5.jpg','header6.jpg','header7.jpg','header8.jpg','header9.jpg','header10.jpg','header11.jpg'];
       function avgBright(img){
         const c=document.createElement('canvas');
         c.width=c.height=1;
@@ -272,7 +268,7 @@
           i.onerror=()=>r({src:s,bright:0});
         })));
       }
-      fetchImageList().then(list=>{if(!list.length)return;preload(list).then(data=>{
+      preload(list).then(data=>{
         function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
         shuffle(data);
         const imgs=data.map(d=>d.src);
@@ -349,7 +345,7 @@
           s.next = null;
           const [ox,oy] = offs(curDir);
           const [ofx,ofy] = floatOff(curDir);
-          const [nfx,nfy] = [ofx,ofy];
+          const [nfx,nfy] = [0,0];
 
           next.style.transition = 'none';
           next.style.transform = `translate(calc(-50% + ${-ox + ofx}% ),calc(-50% + ${-oy + ofy}% ))`;
