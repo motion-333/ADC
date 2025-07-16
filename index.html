@@ -272,13 +272,16 @@
         const floatMap={left:'float-left',right:'float-right',up:'float-up',down:'float-down'};
         const floatDist=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--float-distance'));
         function floatOff(dir){return{left:[-floatDist,0],right:[floatDist,0],up:[0,-floatDist],down:[0,floatDist]}[dir];}
+        const slideScale=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--slide-scale'));
+        function offs(dir){
+          return {left:[-slideScale,0],right:[slideScale,0],up:[0,-slideScale],down:[0,slideScale]}[dir];
+        }
         const state={
           left:{idx:0,dir:patterns.left[0],cur:null,el:document.getElementById('split-left')},
           right:{idx:1,dir:patterns.right[0],cur:null,el:document.getElementById('split-right')}
         };
         function create(src){const d=document.createElement('div');d.className='slide';d.style.backgroundImage=`url(/static/header_img/${src})`;return d;}
         // offset helpers for pan transitions (full-screen)
-        function offs(dir){return{left:[-100,0],right:[100,0],up:[0,-100],down:[0,100]}[dir];}
         const brightState={left:bright[state.left.idx],right:bright[state.right.idx]};
         const topbar=document.querySelector('.topbar');
         function getColorBrightness(col){
@@ -334,6 +337,7 @@
           s.el.append(next);
 
           // capture the current transform so the pan starts smoothly
+          old.getAnimations().forEach(a=>a.finish());
           const cur = getComputedStyle(old).transform;
           old.classList.remove(...Object.values(floatMap));
           old.style.transition='none';
