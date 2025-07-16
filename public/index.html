@@ -60,6 +60,20 @@
     const rightSlots = [document.getElementById('right-slot-0'), document.getElementById('right-slot-1')];
     let currL = 0, currR = 0;
 
+    function imgBrightness(img) {
+      const c = document.createElement('canvas');
+      c.width = c.height = 1;
+      const ctx = c.getContext('2d');
+      ctx.drawImage(img, 0, 0, 1, 1);
+      const d = ctx.getImageData(0, 0, 1, 1).data;
+      return 0.299*d[0] + 0.587*d[1] + 0.114*d[2];
+    }
+
+    function reportBrightness() {
+      const b = (imgBrightness(leftSlots[currL]) + imgBrightness(rightSlots[currR])) / 2;
+      parent.postMessage({ type: 'brightness', value: b }, '*');
+    }
+
     // 1) discover sequential images and preload
     (async function loadImages() {
       for (let i = 1; ; i++) {
@@ -81,6 +95,7 @@
       leftSlots[0].src  = `/static/header_img/${images[idxL]}`;
       rightSlots[0].src = `/static/header_img/${images[idxR]}`;
 
+      reportBrightness();
       setTimeout(tick, INTERVAL);
     })().catch(err => console.error('Image list error:', err));
 
@@ -130,7 +145,7 @@
         const startX = gsap.getProperty(currEl, 'xPercent');
         const startY = gsap.getProperty(currEl, 'yPercent');
 
-        gsap.timeline()
+        gsap.timeline({onComplete: reportBrightness})
           .fromTo(currEl,
             { xPercent: startX, yPercent: startY },
             { xPercent: -100*dir.x, yPercent: -100*dir.y, duration: SLIDE_DUR, ease: 'power2.inOut' },
