@@ -26,6 +26,7 @@
       --text-color: #f1ede2;
       --slide-scale: 110%;
       --float-distance: 3%;
+      --top-offset: 60px;
       --padding1: 1rem;
       --spacing1: 1.5rem;
       --spacing2: 2rem;
@@ -41,7 +42,7 @@
     /* Topbar */
     .topbar {
       position: fixed;
-      top: calc(env(safe-area-inset-top) + 40px);
+      top: calc(env(safe-area-inset-top) + var(--top-offset));
       left: 0;
       width: 100vw;
       height: var(--header-height);
@@ -53,11 +54,11 @@
     }
     .topbar::before {
       content: '';
-      position: absolute; top: -40px; left: 0;
-      width: 100%; height: calc(100% + 80px);
+      position: absolute; top: calc(-1 * var(--top-offset)); left: 0;
+      width: 100%; height: calc(100% + var(--top-offset) * 2);
       background: rgba(255,255,255,0.15);
       backdrop-filter: blur(10px);
-      mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 60%, rgba(0,0,0,0) 100%);
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 80%, rgba(0,0,0,0) 100%);
       z-index: 0;
     }
     .topbar > * { position: relative; z-index: 1; }
@@ -272,8 +273,8 @@
         const floatDist=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--float-distance'));
         function floatOff(dir){return{left:[floatDist,0],right:[-floatDist,0],up:[0,floatDist],down:[0,-floatDist]}[dir];}
         const state={
-          left:{idx:0,step:0,cur:null,el:document.getElementById('split-left')},
-          right:{idx:1,step:0,cur:null,el:document.getElementById('split-right')}
+          left:{idx:0,dir:patterns.left[0],cur:null,el:document.getElementById('split-left')},
+          right:{idx:1,dir:patterns.right[0],cur:null,el:document.getElementById('split-right')}
         };
         function create(src){const d=document.createElement('div');d.className='slide';d.style.backgroundImage=`url(/static/header_img/${src})`;return d;}
         // offset helpers for pan transitions (full-screen)
@@ -315,33 +316,40 @@
         window.addEventListener('resize',updateTopbar);
         function adv(side){
           const s=state[side], pat=patterns[side];
-          const dir=pat[(++s.step-1)%pat.length];
+          const curDir=s.dir;
+          const nextDir=pat[(pat.indexOf(curDir)+1)%pat.length];
+          s.dir=nextDir;
           s.idx=(s.idx+1)%imgs.length;
           brightState[side]=bright[s.idx];
           const old=s.cur;
           const next=create(imgs[s.idx]);
-          const [ox,oy]=offs(dir);
-          const [fx,fy]=floatOff(dir);
-          next.style.transform=`translate(calc(-50% + ${ox+fx}% ),calc(-50% + ${oy+fy}% ))`;
+          const [ox,oy]=offs(curDir);
+          const [ofx,ofy]=floatOff(curDir);
+          const [nfx,nfy]=floatOff(nextDir);
+          next.style.transform=`translate(calc(-50% + ${-ox+nfx}% ),calc(-50% + ${-oy+nfy}% ))`;
           next.style.transition='none';
           s.el.append(next);
 
           old.classList.remove(...Object.values(floatMap));
           old.style.transition='none';
-          old.style.transform=`translate(calc(-50% + ${fx}% ),calc(-50% + ${fy}% ))`;
+          old.style.transform=`translate(calc(-50% + ${ofx}% ),calc(-50% + ${ofy}% ))`;
 
           void next.offsetWidth;
 
           old.style.transition='transform var(--slide-duration) ease-in-out';
           next.style.transition='transform var(--slide-duration) ease-in-out';
-          old.style.transform=`translate(calc(-50% + ${fx-ox}% ),calc(-50% + ${fy-oy}% ))`;
-          next.style.transform='translate(-50%,-50%)';
+          old.style.transform=`translate(calc(-50% + ${ofx+ox}% ),calc(-50% + ${ofy+oy}% ))`;
+          next.style.transform=`translate(calc(-50% + ${nfx}% ),calc(-50% + ${nfy}% ))`;
 
-          old.addEventListener('transitionend',()=>{s.el.removeChild(old);next.classList.add(floatMap[dir]);},{once:true});
+          old.addEventListener('transitionend',()=>{s.el.removeChild(old);next.classList.add(floatMap[nextDir]);},{once:true});
           s.cur=next;
           updateTopbar();
         }
-        ['left','right'].forEach(side=>{const s=state[side];s.cur=create(imgs[s.idx]);s.el.append(s.cur);s.cur.classList.add(floatMap[patterns[side][0]]);
+        ['left','right'].forEach(side=>{
+          const s=state[side];
+          s.cur=create(imgs[s.idx]);
+          s.el.append(s.cur);
+          s.cur.classList.add(floatMap[s.dir]);
           setInterval(()=>adv(side),parseInt(getComputedStyle(document.documentElement).getPropertyValue('--slide-interval')));
         });
       });});
