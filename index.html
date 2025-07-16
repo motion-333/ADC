@@ -105,18 +105,12 @@
       cursor: pointer;
     }
 
-    /* Splitscreen */
-    .splitscreen { display: flex; width: 100vw; height: 100vh; overflow: hidden; }
-    .split { flex: 1; position: relative; overflow: hidden; }
-    .split + .split { border-left: 5px solid var(--border-color); }
-
-    /* Slides */
-    .slide {
-      position: absolute; top: 50%; left: 50%;
-      width: var(--slide-scale); height: var(--slide-scale);
-      background-size: cover; background-position: center;
-      transform: translate(-50%, -50%);
-      transition: transform var(--slide-duration) ease-in-out;
+    /* Slideshow iframe */
+    .slideshow-frame {
+      width: 100vw;
+      height: 100vh;
+      border: none;
+      display: block;
     }
 
     /* Blocks */
@@ -205,10 +199,7 @@
     </nav>
   </header>
 
-  <div class="splitscreen">
-    <div class="split" id="split-left"></div>
-    <div class="split" id="split-right"></div>
-  </div>
+  <iframe src="public/index.html" class="slideshow-frame"></iframe>
 
   <div class="red-rect">
     Il faudra remplir ici avec un texte qui décrit l'unité des trois restaurants à la fois au niveau de sa carte mais aussi de son ambiance.
@@ -249,167 +240,6 @@
       if(back){back.addEventListener('click',e=>{e.preventDefault();scrollToY(0,3000);});}
     });
 
-    // Slideshow
-    document.addEventListener('DOMContentLoaded', () => {
-      const list = ['header1.jpg','header2.jpg','header3.jpg','header4.jpg','header5.jpg','header6.jpg','header7.jpg','header8.jpg','header9.jpg','header10.jpg','header11.jpg'];
-      function avgBright(img){
-        const c=document.createElement('canvas');
-        c.width=c.height=1;
-        const x=c.getContext('2d');
-        x.drawImage(img,0,0,1,1);
-        const d=x.getImageData(0,0,1,1).data;
-        return (d[0]+d[1]+d[2])/3/255;
-      }
-      function preload(imgs){
-        return Promise.all(imgs.map(s=>new Promise(r=>{
-          const i=new Image();
-          i.crossOrigin='anonymous';
-          i.src=`/static/header_img/${s}`;
-          i.onload=()=>{
-            let b=0;
-            try{ b=avgBright(i); }catch{ b=0; }
-            r({src:s,bright:b});
-          };
-          i.onerror=()=>r({src:s,bright:0});
-        })));
-      }
-      preload(list).then(data=>{
-        function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
-        shuffle(data);
-        const imgs=data.map(d=>d.src);
-        const bright=data.map(d=>d.bright);
-        const patterns={left:['up','left','down','right'],right:['right','down','left','up']};
-        const floatMap={left:'float-left',right:'float-right',up:'float-up',down:'float-down'};
-        const floatDist=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--float-distance'));
-        function floatOff(dir){return{left:[-floatDist,0],right:[floatDist,0],up:[0,-floatDist],down:[0,floatDist]}[dir];}
-        const slideScale=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--slide-scale'));
-        function offs(dir){
-          return {left:[-slideScale,0],right:[slideScale,0],up:[0,-slideScale],down:[0,slideScale]}[dir];
-        }
-        function pickNext(ex){
-          const arr=imgs.map((_,i)=>i).filter(i=>!ex.includes(i));
-          return arr[Math.floor(Math.random()*arr.length)];
-        }
-        const lIdx=pickNext([]);
-        const rIdx=pickNext([lIdx]);
-        const state={
-          left:{idx:lIdx,dir:patterns.left[0],cur:null,el:document.getElementById('split-left')},
-          right:{idx:rIdx,dir:patterns.right[0],cur:null,el:document.getElementById('split-right')}
-        };
-        function create(src){const d=document.createElement('div');d.className='slide';d.style.backgroundImage=`url(/static/header_img/${src})`;return d;}
-        // offset helpers for pan transitions (full-screen)
-        const brightState={left:bright[state.left.idx],right:bright[state.right.idx]};
-        const topbar=document.querySelector('.topbar');
-        function getColorBrightness(col){
-          const m=col.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
-          return m? (parseInt(m[1])+parseInt(m[2])+parseInt(m[3]))/3/255 : 1;
-        }
-        function elementBrightness(el){
-          let e=el;
-          while(e&&e!==document&&getComputedStyle(e).backgroundColor==='rgba(0, 0, 0, 0)'){
-            e=e.parentElement;
-          }
-          if(!e) return 1;
-          return getColorBrightness(getComputedStyle(e).backgroundColor);
-        }
-        function brightnessUnderTopbar(){
-          const y=topbar.getBoundingClientRect().bottom+1;
-          const x=window.innerWidth/2;
-          let el=document.elementFromPoint(x,y);
-          if(!el) return 1;
-          const split=el.closest('.split');
-          if(split) return brightState[split.id==='split-left'?'left':'right'];
-          return elementBrightness(el);
-        }
-        function updateTopbar(){
-          const br=brightnessUnderTopbar();
-          const styles=getComputedStyle(document.documentElement);
-          const light=styles.getPropertyValue('--topbar-color-light');
-          const dark=styles.getPropertyValue('--topbar-color-dark');
-          const color=br>0.5?light:dark;
-          document.documentElement.style.setProperty('--topbar-text',color.trim());
-          document.querySelectorAll('.topbar a').forEach(a=>a.style.color=color.trim());
-        }
-        updateTopbar();
-        window.addEventListener('scroll',updateTopbar);
-        window.addEventListener('resize',updateTopbar);
-        setInterval(updateTopbar,100);
-
-        function pan(side){
-          const s = state[side], pat = patterns[side];
-          const other = side==='left'?'right':'left';
-          const curDir = s.dir;
-          const nextDir = pat[(pat.indexOf(curDir)+1)%pat.length];
-          s.dir = nextDir;
-          const nextIdx = s.nextIdx !== undefined ? s.nextIdx : pickNext([s.idx,state[other].idx]);
-          s.idx = nextIdx;
-          s.nextIdx = undefined;
-          brightState[side] = bright[nextIdx];
-          const old = s.cur;
-          const next = s.next || create(imgs[nextIdx]);
-          s.next = null;
-          const [ox,oy] = offs(curDir);
-          const [ofx,ofy] = floatOff(curDir);
-          const [nfx,nfy] = [0,0];
-
-          next.style.transition = 'none';
-          next.style.transform = `translate(calc(-50% + ${-ox + ofx}% ),calc(-50% + ${-oy + ofy}% ))`;
-          if(!next.isConnected) s.el.append(next);
-
-          // capture the current transform so the pan starts smoothly
-          old.getAnimations().forEach(a=>a.finish());
-          next.getAnimations().forEach(a=>a.finish());
-          const cur = getComputedStyle(old).transform;
-          old.classList.remove(...Object.values(floatMap));
-          old.style.transition='none';
-          old.style.transform = cur === 'none' ? 'translate(-50%, -50%)' : cur;
-
-          void next.offsetWidth;
-
-          old.style.transition='transform var(--slide-duration) ease-in-out';
-          next.style.transition='transform var(--slide-duration) ease-in-out';
-          old.style.transform=`translate(calc(-50% + ${ox}% ),calc(-50% + ${oy}% ))`;
-          next.style.transform=`translate(calc(-50% + ${nfx}% ),calc(-50% + ${nfy}% ))`;
-
-          old.addEventListener('transitionend',()=>{s.el.removeChild(old);s.cur=next;startFloat(side);updateTopbar();},{once:true});
-        }
-
-        function startFloat(side){
-          const s = state[side];
-          if(s.next){
-            s.el.removeChild(s.next);
-            s.next=null;
-          }
-          const other = side==='left'?'right':'left';
-          const nextIdx = pickNext([s.idx,state[other].idx]);
-          s.nextIdx = nextIdx;
-          const pre = create(imgs[nextIdx]);
-          s.next = pre;
-          const [ox,oy] = offs(s.dir);
-          const [ofx,ofy] = floatOff(s.dir);
-          const interval = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--slide-interval'));
-          pre.style.transition='none';
-          pre.style.transform = `translate(calc(-50% + ${-ox}% ),calc(-50% + ${-oy}% ))`;
-          s.el.append(pre);
-          pre.animate([
-            {transform:`translate(calc(-50% + ${-ox}% ),calc(-50% + ${-oy}% ))`},
-            {transform:`translate(calc(-50% + ${-ox + ofx}% ),calc(-50% + ${-oy + ofy}% ))`}
-          ],{duration:interval,easing:'ease-out',fill:'forwards'});
-
-          s.cur.style.transition='none';
-          s.cur.style.transform='translate(-50%, -50%)';
-          s.cur.classList.add(floatMap[s.dir]);
-          s.cur.addEventListener('animationend', () => pan(side), {once:true});
-        }
-
-        ['left','right'].forEach(side=>{
-          const s=state[side];
-          s.cur=create(imgs[s.idx]);
-          s.el.append(s.cur);
-          startFloat(side);
-        });
-      });
-    });
   </script>
 
 </body>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Split‑Screen Push‑Slide Optimized</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      overflow: hidden;
+    }
+    .slideshow {
+      position: relative;
+      width: 50vw;
+      height: 100vh;
+      overflow: hidden;
+      background: #000;                    /* hide white flash */
+    }
+    #slideshow-left {
+      border-right: 5px solid #b20000;
+    }
+    .slot {
+      position: absolute;
+      top: -10%;
+      left: -10%;
+      width: 120%;
+      height: 120%;
+      object-fit: cover;
+
+      /* GPU hint (now never cleared) */
+      will-change: transform;
+      backface-visibility: hidden;
+      transform: translate3d(0,0,0);
+    }
+  </style>
+</head>
+<body>
+  <div id="slideshow-left" class="slideshow">
+    <img id="left-slot-0" class="slot" />
+    <img id="left-slot-1" class="slot" />
+  </div>
+  <div id="slideshow-right" class="slideshow">
+    <img id="right-slot-0" class="slot" />
+    <img id="right-slot-1" class="slot" />
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script>
+    const SLIDE_DUR  = 1.0;
+    const INTERVAL   = 3000;
+    const DRIFT_DUR  = INTERVAL/1000 - SLIDE_DUR;
+    const FLOAT_DIST = 5;
+
+    const dirsLeft  = [{x:-1,y:0},{x:0,y:-1},{x:1,y:0},{x:0,y:1}];
+    const dirsRight = [{x:1,y:0},{x:0,y:1},{x:-1,y:0},{x:0,y:-1}];
+
+    let images = [];
+    let idxL = 0, idxR = 1, step = 0;
+    const leftSlots  = [document.getElementById('left-slot-0'),  document.getElementById('left-slot-1')];
+    const rightSlots = [document.getElementById('right-slot-0'), document.getElementById('right-slot-1')];
+    let currL = 0, currR = 0;
+
+    // 1) fetch list and preload
+    fetch('/api/images')
+      .then(r => r.ok ? r.json() : Promise.reject(r.status))
+      .then(list => {
+        images = list;
+        if (images.length < 2) throw 'Need ≥2 images';
+
+        // preload all into browser cache
+        images.forEach(fn => {
+          const img = new Image();
+          img.src = `/static/header_img/${fn}`;
+        });
+
+        // init slots
+        leftSlots[0].src  = `/static/header_img/${images[idxL]}`;
+        rightSlots[0].src = `/static/header_img/${images[idxR]}`;
+
+        // start loop
+        setTimeout(tick, INTERVAL);
+      })
+      .catch(err => console.error('Image list error:', err));
+
+    function tick() {
+      const dirL = dirsLeft [ step % 4 ];
+      const dirR = dirsRight[ step % 4 ];
+
+      // pick two distinct random images
+      let nextL; do { nextL = rand(images.length) } while (nextL === idxL);
+      let nextR; do { nextR = rand(images.length) } while (nextR === idxR || nextR === nextL);
+
+      // transition left and right panels
+      currL = transitionPanel(leftSlots, currL, images[nextL], dirL);
+      currR = transitionPanel(rightSlots, currR, images[nextR], dirR);
+
+      idxL = nextL; 
+      idxR = nextR; 
+      step++;
+
+      setTimeout(tick, INTERVAL);
+    }
+
+    /**
+     * @param slots [slot0, slot1]
+     * @param curr  index of the currently visible slot (0 or 1)
+     * @param fn    filename to load into next slot
+     * @param dir   {x,y} direction vector
+     * @return      new curr index
+     */
+    function transitionPanel(slots, curr, fn, dir) {
+      const next = 1 - curr;
+      const currEl = slots[curr];
+      const nextEl = slots[next];
+      const url = `/static/header_img/${fn}`;
+
+      // ensure any old inline transform is removed, but keep will-change, backface, etc.
+      gsap.set(nextEl, { clearProps: 'transform' });
+
+      // set next image
+      nextEl.src = url;
+
+      // once the image is loaded, start the slide+drift
+      const startAnim = () => {
+        // position it just outside the frame in the correct direction
+        gsap.set(nextEl, { xPercent: 100*dir.x, yPercent: 100*dir.y });
+
+        // slide and then drift
+        gsap.timeline()
+          .to([currEl, nextEl], {
+            xPercent: i => i === 1 ? 0 : -100*dir.x,
+            yPercent: i => i === 1 ? 0 : -100*dir.y,
+            duration: SLIDE_DUR,
+            ease: 'power2.inOut'
+          }, 0)
+          .to(nextEl, {
+            xPercent: -FLOAT_DIST*dir.x,
+            yPercent: -FLOAT_DIST*dir.y,
+            duration: DRIFT_DUR,
+            ease: 'none'
+          }, SLIDE_DUR);
+      };
+
+      if (nextEl.complete && nextEl.naturalWidth !== 0) {
+        // already cached
+        startAnim();
+      } else {
+        // wait for it so we never animate a blank
+        nextEl.onload = () => startAnim();
+      }
+
+      return next;
+    }
+
+    function rand(n) {
+      return Math.floor(Math.random() * n);
+    }
+  </script>
+</body>
+</html>
