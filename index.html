@@ -24,9 +24,9 @@
       --slide-interval: 2000ms;
       --border-color: #b20000;
       --text-color: #f1ede2;
-      --slide-scale: 100%;
+      --slide-scale: 105%;
       --float-distance: 3%;
-      --top-offset: 4vh;
+      --top-offset: 6vh;
       --top-padding: 3%;
       --padding1: 1rem;
       --spacing1: 1.5rem;
@@ -35,7 +35,7 @@
       --topbar-color-dark: #f1ede2;
       --topbar-text: var(--topbar-color-dark);
       --zig-size: 20px;
-      --blur-extra: 0.5rem;
+      --blur-extra: 1.5rem;
       --zig-step: 2%;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -62,7 +62,7 @@
       height: calc(100% + var(--blur-extra));
       background: rgba(255,255,255,0.25);
       backdrop-filter: blur(12px);
-      mask-image: linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,0));
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,0) 80%);
       z-index: 0;
     }
     .topbar > * { position: relative; z-index: 1; }
@@ -73,12 +73,14 @@
     }
     .left-group {
       gap: var(--spacing1);
-      margin-right: var(--spacing1);
+      padding-left: var(--padding1);
+      margin-right: var(--spacing2);
     }
     .right-group {
-      gap: var(--spacing2);
-      margin-left: auto;
+      gap: var(--spacing1);
+      padding-right: var(--padding1);
       padding-left: var(--spacing2);
+      margin-left: auto;
     }
     .logo-container {
       position: absolute;
@@ -271,6 +273,8 @@
         })));
       }
       fetchImageList().then(list=>{if(!list.length)return;preload(list).then(data=>{
+        function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
+        shuffle(data);
         const imgs=data.map(d=>d.src);
         const bright=data.map(d=>d.bright);
         const patterns={left:['up','left','down','right'],right:['right','down','left','up']};
@@ -281,9 +285,15 @@
         function offs(dir){
           return {left:[-slideScale,0],right:[slideScale,0],up:[0,-slideScale],down:[0,slideScale]}[dir];
         }
+        function pickNext(ex){
+          const arr=imgs.map((_,i)=>i).filter(i=>!ex.includes(i));
+          return arr[Math.floor(Math.random()*arr.length)];
+        }
+        const lIdx=pickNext([]);
+        const rIdx=pickNext([lIdx]);
         const state={
-          left:{idx:0,dir:patterns.left[0],cur:null,el:document.getElementById('split-left')},
-          right:{idx:1,dir:patterns.right[0],cur:null,el:document.getElementById('split-right')}
+          left:{idx:lIdx,dir:patterns.left[0],cur:null,el:document.getElementById('split-left')},
+          right:{idx:rIdx,dir:patterns.right[0],cur:null,el:document.getElementById('split-right')}
         };
         function create(src){const d=document.createElement('div');d.className='slide';d.style.backgroundImage=`url(/static/header_img/${src})`;return d;}
         // offset helpers for pan transitions (full-screen)
@@ -326,17 +336,20 @@
 
         function pan(side){
           const s = state[side], pat = patterns[side];
+          const other = side==='left'?'right':'left';
           const curDir = s.dir;
           const nextDir = pat[(pat.indexOf(curDir)+1)%pat.length];
           s.dir = nextDir;
-          s.idx = (s.idx + 1) % imgs.length;
-          brightState[side] = bright[s.idx];
+          const nextIdx = s.nextIdx !== undefined ? s.nextIdx : pickNext([s.idx,state[other].idx]);
+          s.idx = nextIdx;
+          s.nextIdx = undefined;
+          brightState[side] = bright[nextIdx];
           const old = s.cur;
-          const next = s.next || create(imgs[s.idx]);
+          const next = s.next || create(imgs[nextIdx]);
           s.next = null;
           const [ox,oy] = offs(curDir);
           const [ofx,ofy] = floatOff(curDir);
-          const [nfx,nfy] = [0,0];
+          const [nfx,nfy] = [ofx,ofy];
 
           next.style.transition = 'none';
           next.style.transform = `translate(calc(-50% + ${-ox + ofx}% ),calc(-50% + ${-oy + ofy}% ))`;
@@ -366,12 +379,15 @@
             s.el.removeChild(s.next);
             s.next=null;
           }
-          const nextIdx = (s.idx + 1) % imgs.length;
+          const other = side==='left'?'right':'left';
+          const nextIdx = pickNext([s.idx,state[other].idx]);
+          s.nextIdx = nextIdx;
           const pre = create(imgs[nextIdx]);
           s.next = pre;
           const [ox,oy] = offs(s.dir);
           const [ofx,ofy] = floatOff(s.dir);
           const interval = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--slide-interval'));
+          pre.style.transition='none';
           pre.style.transform = `translate(calc(-50% + ${-ox}% ),calc(-50% + ${-oy}% ))`;
           s.el.append(pre);
           pre.animate([
@@ -379,6 +395,8 @@
             {transform:`translate(calc(-50% + ${-ox + ofx}% ),calc(-50% + ${-oy + ofy}% ))`}
           ],{duration:interval,easing:'ease-out',fill:'forwards'});
 
+          s.cur.style.transition='none';
+          s.cur.style.transform='translate(-50%, -50%)';
           s.cur.classList.add(floatMap[s.dir]);
           s.cur.addEventListener('animationend', () => pan(side), {once:true});
         }
