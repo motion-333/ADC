@@ -171,8 +171,8 @@
     /* Float animations */
     @keyframes float-left { from{transform:translate(-50%,-50%);} to{transform:translate(calc(-50% - var(--float-distance)),-50%);} }
     @keyframes float-right{ from{transform:translate(-50%,-50%);} to{transform:translate(calc(-50% + var(--float-distance)),-50%);} }
-    @keyframes float-up   { from{transform:translate(-50%,-50%);} to{transform:translate(-50%,calc(-50% + var(--float-distance)));} }
-    @keyframes float-down { from{transform:translate(-50%,-50%);} to{transform:translate(-50%,calc(-50% - var(--float-distance)));} }
+    @keyframes float-up   { from{transform:translate(-50%,-50%);} to{transform:translate(-50%,calc(-50% - var(--float-distance)));} }
+    @keyframes float-down { from{transform:translate(-50%,-50%);} to{transform:translate(-50%,calc(-50% + var(--float-distance)));} }
     .float-left { animation: float-left var(--slide-interval) linear forwards; }
     .float-right{ animation: float-right var(--slide-interval) linear forwards; }
     .float-up   { animation: float-up var(--slide-interval) linear forwards; }
@@ -327,7 +327,7 @@
           const [ofx,ofy]=floatOff(curDir);
           const [nfx,nfy]=[0,0];
 
-          next.style.transform=`translate(calc(-50% + ${-ox}% ),calc(-50% + ${-oy}% ))`;
+          next.style.transform=`translate(calc(-50% + ${-ox + ofx}% ),calc(-50% + ${-oy + ofy}% ))`;
           next.style.transition='none';
           s.el.append(next);
 
