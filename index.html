@@ -26,7 +26,7 @@
       --text-color: #f1ede2;
       --slide-scale: 105%;
       --float-distance: 3%;
-      --top-offset: 1.5vh;
+      --top-offset: 3vh;
       --top-padding: 3%;
       --padding1: 1rem;
       --spacing1: 1.5rem;
@@ -35,7 +35,7 @@
       --topbar-color-dark: #f1ede2;
       --topbar-text: var(--topbar-color-dark);
       --zig-size: 20px;
-      --blur-extra: 4rem;
+      --blur-extra: 6rem;
       --zig-step: 2%;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -50,6 +50,7 @@
       height: var(--header-height);
       display: flex;
       align-items: center;
+      justify-content: space-between;
       padding: var(--top-padding) var(--padding1) 0;
       z-index: 1000;
     }
@@ -62,7 +63,7 @@
       height: calc(100% + var(--blur-extra));
       background: rgba(255,255,255,0.25);
       backdrop-filter: blur(12px);
-      mask-image: linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,0) 80%);
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,0) 95%);
       z-index: 0;
     }
     .topbar > * { position: relative; z-index: 1; }
@@ -79,8 +80,7 @@
     .right-group {
       gap: var(--spacing2);
       padding-right: var(--padding1);
-      padding-left: var(--spacing2);
-      margin-left: auto;
+      margin-left: var(--spacing2);
     }
     .logo-container {
       position: absolute;

@@ -122,17 +122,19 @@
 
       // once the image is loaded, start the slide+drift
       const startAnim = () => {
-        // position it just outside the frame in the correct direction
+        // place the new slide just outside the frame
         gsap.set(nextEl, { xPercent: 100*dir.x, yPercent: 100*dir.y });
 
-        // slide and then drift
+        // slide away from the current float position and then drift
         gsap.timeline()
-          .to([currEl, nextEl], {
-            xPercent: i => i === 1 ? 0 : -100*dir.x,
-            yPercent: i => i === 1 ? 0 : -100*dir.y,
-            duration: SLIDE_DUR,
-            ease: 'power2.inOut'
-          }, 0)
+          .fromTo(currEl,
+            { xPercent: -FLOAT_DIST*dir.x, yPercent: -FLOAT_DIST*dir.y },
+            { xPercent: -100*dir.x, yPercent: -100*dir.y, duration: SLIDE_DUR, ease: 'power2.inOut' },
+            0)
+          .fromTo(nextEl,
+            { xPercent: 100*dir.x, yPercent: 100*dir.y },
+            { xPercent: 0, yPercent: 0, duration: SLIDE_DUR, ease: 'power2.inOut' },
+            0)
           .to(nextEl, {
             xPercent: -FLOAT_DIST*dir.x,
             yPercent: -FLOAT_DIST*dir.y,
