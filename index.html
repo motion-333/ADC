@@ -26,7 +26,7 @@
       --text-color: #f1ede2;
       --slide-scale: 100%;
       --float-distance: 3%;
-      --top-offset: 80px;
+      --top-offset: 2vh;
       --padding1: 1rem;
       --spacing1: 1.5rem;
       --spacing2: 2rem;
@@ -54,13 +54,13 @@
     .topbar::before {
       content: '';
       position: absolute;
-      top: calc(-1 * var(--top-offset));
+      top: 0;
       left: 0;
       width: 100%;
-      height: calc(100% + var(--top-offset) * 4);
+      height: 100%;
       background: rgba(255,255,255,0.15);
       backdrop-filter: blur(10px);
-      mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 95%, rgba(0,0,0,0) 100%);
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,0));
       z-index: 0;
     }
     .topbar > * { position: relative; z-index: 1; }
@@ -350,7 +350,7 @@
 
           old.style.transition='transform var(--slide-duration) ease-in-out';
           next.style.transition='transform var(--slide-duration) ease-in-out';
-          old.style.transform=`translate(calc(-50% + ${ofx+ox}% ),calc(-50% + ${ofy+oy}% ))`;
+          old.style.transform=`translate(calc(-50% + ${ox}% ),calc(-50% + ${oy}% ))`;
           next.style.transform=`translate(calc(-50% + ${nfx}% ),calc(-50% + ${nfy}% ))`;
 
           old.addEventListener('transitionend',()=>{s.el.removeChild(old);s.cur=next;startFloat(side);updateTopbar();},{once:true});
