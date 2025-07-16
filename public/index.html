@@ -125,10 +125,12 @@
         // place the new slide just outside the frame
         gsap.set(nextEl, { xPercent: 100*dir.x, yPercent: 100*dir.y });
 
-        // slide away from the current float position and then drift
+        const startX = gsap.getProperty(currEl, 'xPercent');
+        const startY = gsap.getProperty(currEl, 'yPercent');
+
         gsap.timeline()
           .fromTo(currEl,
-            { xPercent: -FLOAT_DIST*dir.x, yPercent: -FLOAT_DIST*dir.y },
+            { xPercent: startX, yPercent: startY },
             { xPercent: -100*dir.x, yPercent: -100*dir.y, duration: SLIDE_DUR, ease: 'power2.inOut' },
             0)
           .fromTo(nextEl,
