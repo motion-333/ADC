@@ -326,7 +326,7 @@
           const [ox,oy]=offs(curDir);
           const [ofx,ofy]=floatOff(curDir);
           const [nfx,nfy]=floatOff(nextDir);
-          next.style.transform=`translate(calc(-50% + ${-ox+nfx}% ),calc(-50% + ${-oy+nfy}% ))`;
+          next.style.transform=`translate(calc(-50% + ${-ox}% ),calc(-50% + ${-oy}% ))`;
           next.style.transition='none';
           s.el.append(next);
 
@@ -339,7 +339,7 @@
           old.style.transition='transform var(--slide-duration) ease-in-out';
           next.style.transition='transform var(--slide-duration) ease-in-out';
           old.style.transform=`translate(calc(-50% + ${ofx+ox}% ),calc(-50% + ${ofy+oy}% ))`;
-          next.style.transform=`translate(calc(-50% + ${nfx}% ),calc(-50% + ${nfy}% ))`;
+          next.style.transform='translate(-50%, -50%)';
 
           old.addEventListener('transitionend',()=>{s.el.removeChild(old);next.classList.add(floatMap[nextDir]);},{once:true});
           s.cur=next;
