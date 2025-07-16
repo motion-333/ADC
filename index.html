@@ -26,9 +26,9 @@
       --text-color: #f1ede2;
       --slide-scale: 105%;
       --float-distance: 3%;
-      --top-offset: 6vh;
-      --top-padding: 3%;
-      --padding1: 1rem;
+      --top-offset: 0;
+      --top-padding: 30px;
+      --padding1: 30px;
       --spacing1: 1.5rem;
       --spacing2: 2rem;
       --topbar-color-light: #163359;
@@ -44,7 +44,7 @@
     /* Topbar */
     .topbar {
       position: fixed;
-      top: calc(env(safe-area-inset-top) + var(--top-offset));
+      top: env(safe-area-inset-top);
       left: 0;
       width: 100vw;
       height: var(--header-height);
@@ -63,7 +63,7 @@
       height: calc(100% + var(--blur-extra));
       background: rgba(255,255,255,0.25);
       backdrop-filter: blur(12px);
-      mask-image: linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,0) 80%);
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,0) 90%);
       z-index: 0;
     }
     .topbar > * { position: relative; z-index: 1; }
@@ -76,12 +76,10 @@
     .left-group {
       gap: var(--spacing1);
       justify-content: flex-start;
-      padding-left: var(--padding1);
     }
     .right-group {
       gap: var(--spacing1);
       justify-content: flex-end;
-      padding-right: var(--padding1);
     }
     .logo-container {
       margin: 0 var(--spacing2);
