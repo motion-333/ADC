@@ -51,8 +51,19 @@
     const DRIFT_DUR  = INTERVAL/1000 - SLIDE_DUR;
     const FLOAT_DIST = 3;
 
-    const dirsLeft  = [{x:-1,y:0},{x:0,y:-1},{x:1,y:0},{x:0,y:1}];
-    const dirsRight = [{x:1,y:0},{x:0,y:1},{x:-1,y:0},{x:0,y:-1}];
+    // slide sequences so directions never match between panels
+    const dirsLeft  = [
+      {x:0, y:-1},  // up
+      {x:-1,y:0},   // left
+      {x:0, y:1},   // down
+      {x:1, y:0}    // right
+    ];
+    const dirsRight = [
+      {x:1, y:0},   // right
+      {x:0, y:1},   // down
+      {x:-1,y:0},   // left
+      {x:0, y:-1}   // up
+    ];
 
     let images = [];
     let idxL = 0, idxR = 1, step = 0;
@@ -149,6 +160,7 @@
         const startY = gsap.getProperty(currEl, 'yPercent');
 
         gsap.timeline({onComplete: reportBrightness})
+          .add(() => reportBrightness(), 0)
           .fromTo(currEl,
             { xPercent: startX, yPercent: startY },
             { xPercent: -100*dir.x, yPercent: -100*dir.y, duration: SLIDE_DUR, ease: 'power2.inOut' },
@@ -157,6 +169,7 @@
             { xPercent: 100*dir.x, yPercent: 100*dir.y },
             { xPercent: 0, yPercent: 0, duration: SLIDE_DUR, ease: 'power2.inOut' },
             0)
+          .add(() => reportBrightness(), SLIDE_DUR)
           .to(nextEl, {
             xPercent: -FLOAT_DIST*dir.x,
             yPercent: -FLOAT_DIST*dir.y,

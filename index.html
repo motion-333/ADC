@@ -27,7 +27,7 @@
       --slide-scale: 105%;
       --float-distance: 3%;
       --top-offset: 0;
-      --top-padding: 30px;
+      --top-padding: 20px;
       --padding1: 30px;
       --spacing1: 1.5rem;
       --spacing2: 2rem;
@@ -272,6 +272,8 @@
 
       updateBySection();
       checkFrame();
+      // poll regularly so color reacts even without scrolling
+      setInterval(updateBySection, 100);
     });
 
   </script>
