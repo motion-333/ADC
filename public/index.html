@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Split‑Screen Push‑Slide Optimized</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      overflow: hidden;
+    }
+    .slideshow {
+      position: relative;
+      width: 50vw;
+      height: 100vh;
+      overflow: hidden;
+      background: #000;                    /* hide white flash */
+    }
+    #slideshow-left {
+      border-right: 5px solid #b20000;
+    }
+    .slot {
+      position: absolute;
+      top: -10%;
+      left: -10%;
+      width: 120%;
+      height: 120%;
+      object-fit: cover;
+
+      /* GPU hint (now never cleared) */
+      will-change: transform;
+      backface-visibility: hidden;
+      transform: translate3d(0,0,0);
+    }
+  </style>
+</head>
+<body>
+  <div id="slideshow-left" class="slideshow">
+    <img id="left-slot-0" class="slot" />
+    <img id="left-slot-1" class="slot" />
+  </div>
+  <div id="slideshow-right" class="slideshow">
+    <img id="right-slot-0" class="slot" />
+    <img id="right-slot-1" class="slot" />
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script>
+    const SLIDE_DUR  = 1.0;
+    const INTERVAL   = 3000;
+    const DRIFT_DUR  = INTERVAL/1000 - SLIDE_DUR;
+    const FLOAT_DIST = 3;
+
+    // slide sequences so directions never match between panels
+    const dirsLeft  = [
+      {x:0, y:-1},  // up
+      {x:-1,y:0},   // left
+      {x:0, y:1},   // down
+      {x:1, y:0}    // right
+    ];
+    const dirsRight = [
+      {x:1, y:0},   // right
+      {x:0, y:1},   // down
+      {x:-1,y:0},   // left
+      {x:0, y:-1}   // up
+    ];
+
+    let images = [];
+    let idxL = 0, idxR = 1, step = 0;
+    let timer;
+    let paused = false;
+    const leftSlots  = [document.getElementById('left-slot-0'),  document.getElementById('left-slot-1')];
+    const rightSlots = [document.getElementById('right-slot-0'), document.getElementById('right-slot-1')];
+    let currL = 0, currR = 0;
+
+    function imgBrightness(img) {
+      const c = document.createElement('canvas');
+      c.width = c.height = 1;
+      const ctx = c.getContext('2d');
+      ctx.drawImage(img, 0, 0, 1, 1);
+      const d = ctx.getImageData(0, 0, 1, 1).data;
+      return 0.299*d[0] + 0.587*d[1] + 0.114*d[2];
+    }
+
+    function reportBrightness() {
+      const b = (imgBrightness(leftSlots[currL]) + imgBrightness(rightSlots[currR])) / 2;
+      parent.postMessage({ type: 'brightness', value: b }, '*');
+    }
+
+    // 1) discover sequential images and preload
+    (async function loadImages() {
+      for (let i = 1; ; i++) {
+        const file = `header${i}.jpg`;
+        const url = `/static/header_img/${file}`;
+        try {
+          const res = await fetch(url, { method: 'HEAD' });
+          if (!res.ok) break;
+          images.push(file);
+          const img = new Image();
+          img.src = url;
+        } catch {
+          break;
+        }
+      }
+      if (images.length < 2) throw 'Need \u22652 images';
+
+      // init slots
+      leftSlots[0].src  = `/static/header_img/${images[idxL]}`;
+      rightSlots[0].src = `/static/header_img/${images[idxR]}`;
+
+      reportBrightness();
+      timer = setTimeout(tick, INTERVAL);
+    })().catch(err => console.error('Image list error:', err));
+
+   function tick() {
+      if (paused) return;
+      const dirL = dirsLeft [ step % 4 ];
+      const dirR = dirsRight[ step % 4 ];
+
+      // pick two distinct random images
+      let nextL; do { nextL = rand(images.length) } while (nextL === idxL);
+      let nextR; do { nextR = rand(images.length) } while (nextR === idxR || nextR === nextL);
+
+      // transition left and right panels
+      currL = transitionPanel(leftSlots, currL, images[nextL], dirL);
+      currR = transitionPanel(rightSlots, currR, images[nextR], dirR);
+
+      idxL = nextL; 
+      idxR = nextR; 
+      step++;
+
+      timer = setTimeout(tick, INTERVAL);
+    }
+
+    /**
+     * @param slots [slot0, slot1]
+     * @param curr  index of the currently visible slot (0 or 1)
+     * @param fn    filename to load into next slot
+     * @param dir   {x,y} direction vector
+     * @return      new curr index
+     */
+    function transitionPanel(slots, curr, fn, dir) {
+      const next = 1 - curr;
+      const currEl = slots[curr];
+      const nextEl = slots[next];
+      const url = `/static/header_img/${fn}`;
+
+      // ensure any old inline transform is removed, but keep will-change, backface, etc.
+      gsap.set(nextEl, { clearProps: 'transform' });
+
+      // set next image
+      nextEl.src = url;
+
+      // once the image is loaded, start the slide+drift
+      const startAnim = () => {
+        // place the new slide just outside the frame
+        gsap.set(nextEl, { xPercent: 100*dir.x, yPercent: 100*dir.y });
+
+        const startX = gsap.getProperty(currEl, 'xPercent');
+        const startY = gsap.getProperty(currEl, 'yPercent');
+
+        gsap.timeline({onComplete: reportBrightness})
+          .add(() => reportBrightness(), 0)
+          .fromTo(currEl,
+            { xPercent: startX, yPercent: startY },
+            { xPercent: -100*dir.x, yPercent: -100*dir.y, duration: SLIDE_DUR, ease: 'power2.inOut' },
+            0)
+          .fromTo(nextEl,
+            { xPercent: 100*dir.x, yPercent: 100*dir.y },
+            { xPercent: 0, yPercent: 0, duration: SLIDE_DUR, ease: 'power2.inOut' },
+            0)
+          .add(() => reportBrightness(), SLIDE_DUR)
+          .to(nextEl, {
+            xPercent: -FLOAT_DIST*dir.x,
+            yPercent: -FLOAT_DIST*dir.y,
+            duration: DRIFT_DUR,
+            ease: 'none'
+          }, SLIDE_DUR);
+      };
+
+      if (nextEl.complete && nextEl.naturalWidth !== 0) {
+        // already cached
+        startAnim();
+      } else {
+        // wait for it so we never animate a blank
+        nextEl.onload = () => startAnim();
+      }
+
+      return next;
+    }
+
+    function rand(n) {
+      return Math.floor(Math.random() * n);
+    }
+
+    window.addEventListener('message', e => {
+      if(!e.data || !e.data.type) return;
+      if(e.data.type === 'pause') {
+        paused = true;
+        gsap.globalTimeline.pause();
+        if (timer) { clearTimeout(timer); timer = null; }
+      } else if(e.data.type === 'resume') {
+        if(paused) {
+          paused = false;
+          gsap.globalTimeline.resume();
+          if(!timer) timer = setTimeout(tick, INTERVAL);
+        }
+      }
+    });
+  </script>
+</body>
+</html>

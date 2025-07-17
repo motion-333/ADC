@@ -4,6 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Aux Dés Calés Slideshow</title>
+  <link rel="preload" as="image" href="/static/header_img/header1.jpg">
+  <link rel="preload" as="image" href="/static/header_img/header2.jpg">
+  <link rel="preload" as="image" href="/static/header_img/header3.jpg">
+  <link rel="preload" as="image" href="/static/header_img/header4.jpg">
+  <link rel="preload" as="image" href="/static/header_img/header5.jpg">
+  <link rel="preload" as="image" href="/static/header_img/header6.jpg">
+  <link rel="preload" as="image" href="/static/header_img/header7.jpg">
+  <link rel="preload" as="image" href="/static/header_img/header8.jpg">
+  <link rel="preload" as="image" href="/static/header_img/header9.jpg">
+  <link rel="preload" as="image" href="/static/header_img/header10.jpg">
+  <link rel="preload" as="image" href="/static/header_img/header11.jpg">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Futura:wght@700&display=swap');
     :root {
@@ -13,50 +24,76 @@
       --slide-interval: 2000ms;
       --border-color: #b20000;
       --text-color: #f1ede2;
-      --slide-scale: 110%;
-      --float-distance: 5%;
+      --slide-scale: 105%;
+      --float-distance: 3%;
+      --top-offset: 0;
+      --top-padding: 6px;
+      --padding1: 30px;
+      --spacing1: 1.5rem;
+      --spacing2: 2rem;
+      --topbar-color-light: #163359;
+      --topbar-color-dark: #f1ede2;
+      --topbar-text: var(--topbar-color-dark);
+      --zig-size: 20px;
+      --blur-extra: 9rem;
+      --zig-step: 2%;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Futura', sans-serif; }
 
     /* Topbar */
     .topbar {
-      position: fixed; top: 0; left: 0;
-      width: 100vw; height: var(--header-height);
-      display: flex; align-items: center;
+      position: fixed;
+      top: calc(env(safe-area-inset-top) + var(--top-offset));
+      left: 0;
+      width: 100vw;
+      height: var(--header-height);
+      display: flex;
+      align-items: center;
       justify-content: space-between;
+      padding: var(--top-padding) var(--padding1) 0;
       z-index: 1000;
     }
     .topbar::before {
       content: '';
-      position: absolute; top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(255,255,255,0.15);
-      backdrop-filter: blur(10px);
-      mask-image: linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,0));
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: calc(100% + var(--blur-extra));
+      background: rgba(255,255,255,0.25);
+      backdrop-filter: blur(12px);
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,0) 90%);
       z-index: 0;
     }
     .topbar > * { position: relative; z-index: 1; }
-    .left-group, .right-group {
-      flex: 1;
+    .left-group,
+    .right-group {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding: 0 1rem;
+      flex: 1;
+    }
+    .left-group {
+      gap: var(--spacing1);
+      justify-content: flex-start;
+    }
+    .right-group {
+      gap: var(--spacing1);
+      justify-content: flex-end;
     }
     .logo-container {
-      flex: 0 0 auto;
+      margin: 0 var(--spacing2);
       display: flex;
-      justify-content: center;
       align-items: center;
     }
     .topbar a {
-      color: var(--text-color);
+      color: var(--topbar-text);
       text-transform: uppercase;
       font-weight: bold;
-      font-size: 0.9rem;
+      font-size: 1.1rem;
       text-decoration: none;
       white-space: nowrap;
+      transition: color 0.5s;
     }
     .logo {
       height: 60%;
@@ -64,36 +101,81 @@
       cursor: pointer;
     }
 
-    /* Splitscreen */
-    .splitscreen { display: flex; width: 100vw; height: 100vh; overflow: hidden; }
-    .split { flex: 1; position: relative; overflow: hidden; }
-    .split + .split { border-left: 5px solid var(--border-color); }
-
-    /* Slides */
-    .slide {
-      position: absolute; top: 50%; left: 50%;
-      width: var(--slide-scale); height: var(--slide-scale);
-      background-size: cover; background-position: center;
-      transform: translate(-50%, -50%);
-      transition: transform var(--slide-duration) ease-in-out;
+    /* Slideshow iframe */
+    .slideshow-frame {
+      width: 100vw;
+      height: 100vh;
+      border: none;
+      display: block;
     }
 
     /* Blocks */
-    .green-rect { background: green; width: 100vw; height: 200px; }
-    .main-yellow { background: yellow; width: 100vw; height: 100vh; }
+    .red-rect {
+      background: var(--border-color);
+      color: var(--text-color);
+      width: 100vw;
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 0 1rem;
+      clip-path: polygon(0 0,100% 0,100% calc(100% - var(--zig-size)),98% 100%,96% calc(100% - var(--zig-size)),94% 100%,92% calc(100% - var(--zig-size)),90% 100%,88% calc(100% - var(--zig-size)),86% 100%,84% calc(100% - var(--zig-size)),82% 100%,80% calc(100% - var(--zig-size)),78% 100%,76% calc(100% - var(--zig-size)),74% 100%,72% calc(100% - var(--zig-size)),70% 100%,68% calc(100% - var(--zig-size)),66% 100%,64% calc(100% - var(--zig-size)),62% 100%,60% calc(100% - var(--zig-size)),58% 100%,56% calc(100% - var(--zig-size)),54% 100%,52% calc(100% - var(--zig-size)),50% 100%,48% calc(100% - var(--zig-size)),46% 100%,44% calc(100% - var(--zig-size)),42% 100%,40% calc(100% - var(--zig-size)),38% 100%,36% calc(100% - var(--zig-size)),34% 100%,32% calc(100% - var(--zig-size)),30% 100%,28% calc(100% - var(--zig-size)),26% 100%,24% calc(100% - var(--zig-size)),22% 100%,20% calc(100% - var(--zig-size)),18% 100%,16% calc(100% - var(--zig-size)),14% 100%,12% calc(100% - var(--zig-size)),10% 100%,8% calc(100% - var(--zig-size)),6% 100%,4% calc(100% - var(--zig-size)),2% 100%,0% calc(100% - var(--zig-size)),0 0);
+    }
+    .red-box {
+      background: var(--border-color);
+      width: 100vw;
+      height: 200px;
+    }
+    .main-yellow {
+      background: var(--text-color);
+      width: 100vw;
+      height: 100vh;
+      clip-path: polygon(0 0,2% var(--zig-size),4% 0,6% var(--zig-size),8% 0,10% var(--zig-size),12% 0,14% var(--zig-size),16% 0,18% var(--zig-size),20% 0,22% var(--zig-size),24% 0,26% var(--zig-size),28% 0,30% var(--zig-size),32% 0,34% var(--zig-size),36% 0,38% var(--zig-size),40% 0,42% var(--zig-size),44% 0,46% var(--zig-size),48% 0,50% var(--zig-size),52% 0,54% var(--zig-size),56% 0,58% var(--zig-size),60% 0,62% var(--zig-size),64% 0,66% var(--zig-size),68% 0,70% var(--zig-size),72% 0,74% var(--zig-size),76% 0,78% var(--zig-size),80% 0,82% var(--zig-size),84% 0,86% var(--zig-size),88% 0,90% var(--zig-size),92% 0,94% var(--zig-size),96% 0,98% var(--zig-size),100% 0,100% 100%,0 100%);
+      margin-top: calc(-1 * var(--zig-size));
+    }
     .main-purple { background: purple; width: 100vw; height: 100vh; }
-    .pink-block { background: pink; width: 100vw; height: 33vh; }
-    .footer { background: var(--border-color); width: 100vw; height: var(--header-height); }
+    .pink-block {
+      background: pink;
+      width: 100vw;
+      height: 100vh;
+    }
+    .footer {
+      background: var(--border-color);
+      width: 100vw;
+      height: var(--header-height);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--padding1);
+      color: var(--text-color);
+      font-size: 0.8rem;
+    }
+    .footer-right {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing1);
+    }
+    #back-top {
+      background: none;
+      border: none;
+      color: inherit;
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 0;
+    }
 
     /* Float animations */
-    @keyframes float-left { from{transform:translate(-50%,-50%);} to{transform:translate(calc(-50% + var(--float-distance)),-50%);} }
-    @keyframes float-right{ from{transform:translate(-50%,-50%);} to{transform:translate(calc(-50% - var(--float-distance)),-50%);} }
-    @keyframes float-up   { from{transform:translate(-50%,-50%);} to{transform:translate(-50%,calc(-50% + var(--float-distance)));} }
-    @keyframes float-down { from{transform:translate(-50%,-50%);} to{transform:translate(-50%,calc(-50% - var(--float-distance)));} }
-    .float-left { animation: float-left 6s ease-in-out infinite alternate both; }
-    .float-right{ animation: float-right 6s ease-in-out infinite alternate both; }
-    .float-up   { animation: float-up 6s ease-in-out infinite alternate both; }
-    .float-down { animation: float-down 6s ease-in-out infinite alternate both; }
+    @keyframes float-left { from{transform:translate(-50%,-50%);} to{transform:translate(calc(-50% - var(--float-distance)),-50%);} }
+    @keyframes float-right{ from{transform:translate(-50%,-50%);} to{transform:translate(calc(-50% + var(--float-distance)),-50%);} }
+    @keyframes float-up   { from{transform:translate(-50%,-50%);} to{transform:translate(-50%,calc(-50% - var(--float-distance)));} }
+    @keyframes float-down { from{transform:translate(-50%,-50%);} to{transform:translate(-50%,calc(-50% + var(--float-distance)));} }
+    .float-left { animation: float-left var(--slide-interval) ease-out forwards; }
+    .float-right{ animation: float-right var(--slide-interval) ease-out forwards; }
+    .float-up   { animation: float-up var(--slide-interval) ease-out forwards; }
+    .float-down { animation: float-down var(--slide-interval) ease-out forwards; }
+
+    .resto-frame { width: 100%; height: 100%; border: none; }
   </style>
 </head>
 <body>
@@ -113,67 +195,116 @@
     </nav>
   </header>
 
-  <div class="splitscreen">
-    <div class="split" id="split-left"></div>
-    <div class="split" id="split-right"></div>
-  </div>
+  <iframe src="public/index.html" class="slideshow-frame"></iframe>
 
-  <div class="green-rect"></div>
-  <div class="main-yellow" id="yellow"></div>
-  <div class="green-rect"></div>
-  <div class="main-purple" id="purple"></div>
-  <div class="pink-block" id="pink"></div>
-  <div class="footer"></div>
+  <div class="red-rect" data-bright="dark">
+    Il faudra remplir ici avec un texte qui décrit l'unité des trois restaurants à la fois au niveau de sa carte mais aussi de son ambiance.
+  </div>
+  <div class="main-yellow" id="yellow" data-bright="light">
+    <iframe src="resto.html" class="resto-frame"></iframe>
+  </div>
+  <div class="red-box" data-bright="dark"></div>
+  <div class="main-purple" id="purple" data-bright="dark"></div>
+  <div class="pink-block" id="pink" data-bright="light"></div>
+  <div class="footer">
+    <span>©2025 Aux Dés Calés</span>
+    <div class="footer-right">
+      <button id="back-top">Haut de page</button>
+      <span>Dev. by <a href="https://motion333.com" target="_blank">Motion</a></span>
+    </div>
+  </div>
 
   <script>
     // Smooth scroll
     document.addEventListener('DOMContentLoaded', () => {
-      const duration = 2000;
+      const defaultDuration = 2000;
       function ease(t) { return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2; }
-      function scrollToY(targetY) {
+      function scrollToY(targetY,duration=defaultDuration) {
         const startY=window.pageYOffset, diff=targetY-startY; let t0;
         function step(ts){ if(!t0)t0=ts; const t=Math.min((ts-t0)/duration,1);
           window.scrollTo(0,startY+diff*ease(t)); if(t<1)requestAnimationFrame(step);
         }
         requestAnimationFrame(step);
       }
-      document.querySelectorAll('.topbar a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{
-        e.preventDefault(); const sel=a.getAttribute('href'), el=document.querySelector(sel);
-        const y=el?el.getBoundingClientRect().top+window.pageYOffset-parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-height')):0;
+      const headerEl = document.querySelector('.topbar');
+      document.querySelectorAll('.topbar a[href^="#"]').forEach(a => a.addEventListener('click', e => {
+        e.preventDefault();
+        const sel = a.getAttribute('href');
+        const el  = document.querySelector(sel);
+        const headerH = headerEl.getBoundingClientRect().height;
+        const y = el ? el.getBoundingClientRect().top + window.pageYOffset - headerH : 0;
         scrollToY(y);
       }));
       document.getElementById('logo-btn').addEventListener('click',e=>{e.preventDefault();scrollToY(0);});
+      const back=document.getElementById('back-top');
+      if(back){back.addEventListener('click',e=>{e.preventDefault();scrollToY(0,3000);});}
+
+      const root = document.documentElement;
+      let frameBright = 255;
+
+      function colorFromBrightness(b) {
+        const dark  = getComputedStyle(root).getPropertyValue('--topbar-color-dark').trim();
+        const light = getComputedStyle(root).getPropertyValue('--topbar-color-light').trim();
+        return b > 127 ? light : dark;
+      }
+
+      function getColorBrightness(col) {
+        const m = col.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+        if (m) {
+          return 0.299*+m[1] + 0.587*+m[2] + 0.114*+m[3];
+        }
+        return 255;
+      }
+
+      function elementBrightness(el) {
+        if (!el) return 255;
+        if (el.dataset.bright) return el.dataset.bright === 'dark' ? 0 : 255;
+        const style = getComputedStyle(el);
+        if (style.backgroundColor && style.backgroundColor !== 'rgba(0, 0, 0, 0)') {
+          return getColorBrightness(style.backgroundColor);
+        }
+        return elementBrightness(el.parentElement);
+      }
+
+      function updateTopbar() {
+        const rect = headerEl.getBoundingClientRect();
+        const y = rect.bottom + 1;
+        const el = document.elementFromPoint(window.innerWidth/2, y);
+        let brightness;
+        if (el && (el.tagName === 'IFRAME' || el.closest('iframe'))) {
+          brightness = frameBright;
+        } else {
+          brightness = elementBrightness(el);
+        }
+        root.style.setProperty('--topbar-text', colorFromBrightness(brightness));
+      }
+
+      const frame = document.querySelector('.slideshow-frame');
+
+      function checkFrame() {
+        const shouldPause = window.pageYOffset >= window.innerHeight;
+        frame.contentWindow.postMessage({type: shouldPause ? 'pause' : 'resume'}, '*');
+      }
+
+      window.addEventListener('scroll', () => {
+        updateTopbar();
+        checkFrame();
+      });
+      window.addEventListener('message', e => {
+        if(e.data && e.data.type === 'brightness') {
+          frameBright = e.data.value;
+          updateTopbar();
+        }
+      });
+
+      updateTopbar();
+      checkFrame();
+      // poll regularly so color reacts even without scrolling
+      setInterval(updateTopbar, 50);
     });
 
-    // Slideshow
-    document.addEventListener('DOMContentLoaded', () => {
-      async function fetchImageList(){
-        try{const res=await fetch('/static/header_img/');const html=await res.text();const doc=new DOMParser().parseFromString(html,'text/html');
-          return Array.from(doc.querySelectorAll('a')).map(a=>a.getAttribute('href')).filter(h=>/\.(jpe?g|png)$/i.test(h));
-        }catch{return[];}
-      }
-      function preload(imgs){return Promise.all(imgs.map(s=>new Promise(r=>{const i=new Image();i.src=`/static/header_img/${s}`;i.onload=i.onerror=r;})));}
-      fetchImageList().then(imgs=>{if(!imgs.length)return;preload(imgs).then(()=>{
-        const patterns={left:['up','left','down','right'],right:['right','down','left','up']};
-        const floatMap={left:'float-left',right:'float-right',up:'float-up',down:'float-down'};
-        const state={
-          left:{idx:0,step:0,cur:null,el:document.getElementById('split-left')},
-          right:{idx:1,step:0,cur:null,el:document.getElementById('split-right')}
-        };
-        function create(src){const d=document.createElement('div');d.className='slide';d.style.backgroundImage=`url(/static/header_img/${src})`;return d;}
-        function offs(dir){return{left:[-100,0],right:[100,0],up:[0,-100],down:[0,100]}[dir];}
-        function adv(side){const s=state[side],pat=patterns[side];const dir=pat[(++s.step-1)%pat.length];s.idx=(s.idx+1)%imgs.length;
-          const old=s.cur;old.classList.remove(...Object.values(floatMap));const next=create(imgs[s.idx]);const[ox,oy]=offs(dir);
-          next.style.transform=`translate(calc(-50% + ${ox}% ),calc(-50% + ${oy}% ))`;s.el.append(next);
-          requestAnimationFrame(()=>{old.style.transform=`translate(calc(-50% - ${ox}% ),calc(-50% - ${oy}% ))`;next.style.transform='translate(-50%,-50%)';});
-          old.addEventListener('transitionend',()=>{s.el.removeChild(old);next.classList.add(floatMap[dir]);},{once:true});s.cur=next;
-        }
-        ['left','right'].forEach(side=>{const s=state[side];s.cur=create(imgs[s.idx]);s.el.append(s.cur);s.cur.classList.add(floatMap[patterns[side][0]]);
-          setInterval(()=>adv(side),parseInt(getComputedStyle(document.documentElement).getPropertyValue('--slide-interval')));
-        });
-      });});
-    });
   </script>
+
 </body>
 </html>
 
