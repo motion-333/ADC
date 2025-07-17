@@ -239,36 +239,44 @@
       const back=document.getElementById('back-top');
       if(back){back.addEventListener('click',e=>{e.preventDefault();scrollToY(0,3000);});}
 
-      function setTopbarColor(brightness) {
-        const dark  = getComputedStyle(document.documentElement).getPropertyValue('--topbar-color-dark');
-        const light = getComputedStyle(document.documentElement).getPropertyValue('--topbar-color-light');
-        const clr = brightness < 127 ? dark : light;
-        document.documentElement.style.setProperty('--topbar-text', clr);
-      }
-
+      const root = document.documentElement;
       let frameBright = 255;
 
-      function updateBySection() {
+      function colorFromBrightness(b) {
+        const dark  = getComputedStyle(root).getPropertyValue('--topbar-color-dark').trim();
+        const light = getComputedStyle(root).getPropertyValue('--topbar-color-light').trim();
+        return b > 127 ? light : dark;
+      }
+
+      function getColorBrightness(col) {
+        const m = col.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+        if (m) {
+          return 0.299*+m[1] + 0.587*+m[2] + 0.114*+m[3];
+        }
+        return 255;
+      }
+
+      function elementBrightness(el) {
+        if (!el) return 255;
+        if (el.dataset.bright) return el.dataset.bright === 'dark' ? 0 : 255;
+        const style = getComputedStyle(el);
+        if (style.backgroundColor && style.backgroundColor !== 'rgba(0, 0, 0, 0)') {
+          return getColorBrightness(style.backgroundColor);
+        }
+        return elementBrightness(el.parentElement);
+      }
+
+      function updateTopbar() {
         const rect = headerEl.getBoundingClientRect();
         const y = rect.bottom + 1;
-        let el = document.elementFromPoint(window.innerWidth/2, y);
-        if(!el) return;
-        if(el.tagName === 'IFRAME' || el.closest('iframe')) {
-          setTopbarColor(frameBright);
-          return;
-        }
-        let n = el;
-        while(n && !n.dataset.bright) n = n.parentElement;
-        if(n && n.dataset.bright){
-          setTopbarColor(n.dataset.bright === 'dark' ? 0 : 255);
+        const el = document.elementFromPoint(window.innerWidth/2, y);
+        let brightness;
+        if (el && (el.tagName === 'IFRAME' || el.closest('iframe'))) {
+          brightness = frameBright;
         } else {
-          const bg = getComputedStyle(el).backgroundColor;
-          const m = bg.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
-          if(m){
-            const b = 0.299*parseInt(m[1]) + 0.587*parseInt(m[2]) + 0.114*parseInt(m[3]);
-            setTopbarColor(b);
-          }
+          brightness = elementBrightness(el);
         }
+        root.style.setProperty('--topbar-text', colorFromBrightness(brightness));
       }
 
       const frame = document.querySelector('.slideshow-frame');
@@ -279,20 +287,20 @@
       }
 
       window.addEventListener('scroll', () => {
-        updateBySection();
+        updateTopbar();
         checkFrame();
       });
       window.addEventListener('message', e => {
         if(e.data && e.data.type === 'brightness') {
           frameBright = e.data.value;
-          updateBySection();
+          updateTopbar();
         }
       });
 
-      updateBySection();
+      updateTopbar();
       checkFrame();
       // poll regularly so color reacts even without scrolling
-      setInterval(updateBySection, 50);
+      setInterval(updateTopbar, 50);
     });
 
   </script>
