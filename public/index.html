@@ -56,6 +56,8 @@
 
     let images = [];
     let idxL = 0, idxR = 1, step = 0;
+    let timer;
+    let paused = false;
     const leftSlots  = [document.getElementById('left-slot-0'),  document.getElementById('left-slot-1')];
     const rightSlots = [document.getElementById('right-slot-0'), document.getElementById('right-slot-1')];
     let currL = 0, currR = 0;
@@ -96,10 +98,11 @@
       rightSlots[0].src = `/static/header_img/${images[idxR]}`;
 
       reportBrightness();
-      setTimeout(tick, INTERVAL);
+      timer = setTimeout(tick, INTERVAL);
     })().catch(err => console.error('Image list error:', err));
 
-    function tick() {
+   function tick() {
+      if (paused) return;
       const dirL = dirsLeft [ step % 4 ];
       const dirR = dirsRight[ step % 4 ];
 
@@ -115,7 +118,7 @@
       idxR = nextR; 
       step++;
 
-      setTimeout(tick, INTERVAL);
+      timer = setTimeout(tick, INTERVAL);
     }
 
     /**
@@ -176,6 +179,21 @@
     function rand(n) {
       return Math.floor(Math.random() * n);
     }
+
+    window.addEventListener('message', e => {
+      if(!e.data || !e.data.type) return;
+      if(e.data.type === 'pause') {
+        paused = true;
+        gsap.globalTimeline.pause();
+        if (timer) { clearTimeout(timer); timer = null; }
+      } else if(e.data.type === 'resume') {
+        if(paused) {
+          paused = false;
+          gsap.globalTimeline.resume();
+          if(!timer) timer = setTimeout(tick, INTERVAL);
+        }
+      }
+    });
   </script>
 </body>
 </html>
