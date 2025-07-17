@@ -226,17 +226,18 @@
         }
         requestAnimationFrame(step);
       }
-      document.querySelectorAll('.topbar a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{
-        e.preventDefault(); const sel=a.getAttribute('href'), el=document.querySelector(sel);
-        const y=el?el.getBoundingClientRect().top+window.pageYOffset-parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-height')):0;
+      const headerEl = document.querySelector('.topbar');
+      document.querySelectorAll('.topbar a[href^="#"]').forEach(a => a.addEventListener('click', e => {
+        e.preventDefault();
+        const sel = a.getAttribute('href');
+        const el  = document.querySelector(sel);
+        const headerH = headerEl.getBoundingClientRect().height;
+        const y = el ? el.getBoundingClientRect().top + window.pageYOffset - headerH : 0;
         scrollToY(y);
       }));
       document.getElementById('logo-btn').addEventListener('click',e=>{e.preventDefault();scrollToY(0);});
       const back=document.getElementById('back-top');
       if(back){back.addEventListener('click',e=>{e.preventDefault();scrollToY(0,3000);});}
-
-      const headerH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-height'));
-      const offset   = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--top-offset'));
 
       function setTopbarColor(brightness) {
         const dark  = getComputedStyle(document.documentElement).getPropertyValue('--topbar-color-dark');
@@ -248,7 +249,8 @@
       let frameBright = 255;
 
       function updateBySection() {
-        const y = headerH + offset + 1;
+        const rect = headerEl.getBoundingClientRect();
+        const y = rect.bottom + 1;
         let el = document.elementFromPoint(window.innerWidth/2, y);
         if(!el) return;
         if(el.tagName === 'IFRAME' || el.closest('iframe')) {
