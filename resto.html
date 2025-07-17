@@ -110,6 +110,31 @@
       flex-shrink: 0;
       transform-origin: center;
     }
+
+    /* Menu overlay */
+    .menu-overlay {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(150%, -50%);
+      transition: transform 4s ease;
+      pointer-events: none;
+      z-index: 9999;
+    }
+    .menu-overlay.active {
+      transform: translate(-50%, -50%);
+      pointer-events: auto;
+    }
+    .menu-overlay img {
+      height: 75vh;
+      animation: none;
+    }
+
+    @keyframes rotate-snap {
+      0%   { transform: rotate(-15deg); }
+      50%  { transform: rotate(15deg);  }
+      100% { transform: rotate(-15deg); }
+    }
   </style>
 </head>
 <body>
@@ -123,6 +148,7 @@
           181 Rue Legendre<br>
           +33 1 47 70 01 09<br>
           <a href="#">Réserver</a>
+          <a href="#" class="menu-btn" data-img="/static/menu/17.png">Menu</a>
         </div>
       </div>
       <div class="line" data-offset="0ms">
@@ -141,6 +167,7 @@
           11 rue Hégésippe Moreau<br>
           +33 1 42 66 95 43<br>
           <a href="#">Réserver</a>
+          <a href="#" class="menu-btn" data-img="/static/menu/18.png">Menu</a>
         </div>
       </div>
       <div class="line" data-offset="5000ms">
@@ -159,6 +186,7 @@
           15 Rue Ganneron<br>
           +33 01 71 27 50 91<br>
           <a href="#">Réserver</a>
+          <a href="#" class="menu-btn" data-img="/static/menu/detour.png">Menu</a>
         </div>
       </div>
       <div class="line" data-offset="10000ms">
@@ -168,6 +196,10 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <div id="menu-overlay" class="menu-overlay">
+    <img src="" alt="menu" />
   </div>
 
   <script>
@@ -263,6 +295,39 @@
           requestAnimationFrame(step);
         }
         requestAnimationFrame(step);
+      });
+
+      // menu overlay logic
+      const overlay = document.getElementById('menu-overlay');
+      const overlayImg = overlay.querySelector('img');
+      let visible = false;
+
+      function showMenu(src) {
+        overlayImg.src = src;
+        overlayImg.style.animation = 'rotate-snap 1s ease-in-out 4 alternate';
+        overlay.classList.add('active');
+        overlay.style.transform = 'translate(-50%, -50%)';
+        visible = true;
+      }
+
+      function hideMenu() {
+        overlayImg.style.animation = 'rotate-snap 1s ease-in-out 4 alternate';
+        overlay.style.transform = 'translate(150%, -50%)';
+        overlay.addEventListener('transitionend', () => {
+          if (!visible) overlay.classList.remove('active');
+        }, { once: true });
+        visible = false;
+      }
+
+      document.querySelectorAll('.menu-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+          e.preventDefault();
+          if (visible) {
+            hideMenu();
+          } else {
+            showMenu(btn.dataset.img);
+          }
+        });
       });
     });
   </script>
